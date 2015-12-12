@@ -8,7 +8,7 @@ setup(
     license='MIT',
     author='Maksim Ekimovskii',
     author_email='ekimovsky.maksim@gmail.com',
-    description='API library for vk.com',
+    description='vk.com requests for humans. API library for vk.com',
     install_requires=[
         'six',
         'requests==2.8.1'

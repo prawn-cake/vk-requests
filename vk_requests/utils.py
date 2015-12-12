@@ -35,6 +35,15 @@ def json_iter_parse(response_text):
 
 
 def stringify_values(dictionary):
+    """Coerce iterable values to 'val1,val2,valN'
+
+    Example:
+        fields=['nickname', 'city', 'can_see_all_posts']
+        --> fields='nickname,city,can_see_all_posts'
+
+    :param dictionary:
+    :return: converted values dict
+    """
     values_dict = {}
     for key, value in dictionary.items():
         if isinstance(value, Iterable):
@@ -79,14 +88,18 @@ def get_masked_phone_number(html):
     fields = re.findall(r'<span class="field_prefix">(.*)</span>', html)
     result = []
     for field in fields:
-        result.append(field.lstrip('&nbsp;'))
+        result.append(field.replace('&nbsp;', ''))
     return tuple(result)
 
 
-class LoggingSession(requests.Session):
+class VerboseHTTPSession(requests.Session):
+    """HTTP session based on requests.Session with some extra logging
+    """
+
     def request(self, method, url, **kwargs):
         logger.debug('Request: %s %s, params=%r, data=%r',
                      method, url, kwargs.get('params'), kwargs.get('data'))
-        response = super(LoggingSession, self).request(method, url, **kwargs)
+        response = super(VerboseHTTPSession, self).request(
+            method, url, **kwargs)
         logger.debug('Response: %s %s', response.status_code, response.url)
         return response

@@ -1,10 +1,10 @@
 
 # API Error Codes
-AUTHORIZATION_FAILED = 5    # Invalid access token
+AUTHORIZATION_FAILED = 5        # Invalid access token
 PERMISSION_IS_DENIED = 7
 CAPTCHA_IS_NEEDED = 14
-ACCESS_DENIED = 15          # No access to call this method
-                            # User deactivated
+ACCESS_DENIED = 15              # No access to call this method
+USER_IS_DELETED_OR_BANNED = 18  # User deactivated
 INVALID_USER_ID = 113
 
 
@@ -19,28 +19,30 @@ class VkAuthError(VkException):
 class VkAPIError(VkException):
     __slots__ = ['error', 'code', 'message', 'request_params', 'redirect_uri']
 
-    CAPTCHA_NEEDED = 14
-    ACCESS_DENIED = 15
-
-    def __init__(self, error_data):
+    def __init__(self, vk_error_data):
         super(VkAPIError, self).__init__()
-        self.error_data = error_data
-        self.code = error_data.get('error_code')
-        self.message = error_data.get('error_msg')
-        self.request_params = self.get_pretty_request_params(error_data)
-        self.redirect_uri = error_data.get('redirect_uri')
+        self.error_data = vk_error_data
+        self.code = vk_error_data.get('error_code')
+        self.message = vk_error_data.get('error_msg')
+        self.request_params = self.get_pretty_request_params(vk_error_data)
+        self.redirect_uri = vk_error_data.get('redirect_uri')
 
     @staticmethod
     def get_pretty_request_params(error_data):
         request_params = error_data.get('request_params', ())
-        request_params = {param['key']: param['value'] for param in request_params}
+        request_params = {param['key']: param['value']
+                          for param in request_params}
         return request_params
 
     def is_access_token_incorrect(self):
-        return self.code == self.ACCESS_DENIED and 'access_token' in self.message
+        return all([self.code == ACCESS_DENIED,
+                    'access_token' in self.message])
 
     def is_captcha_needed(self):
-        return self.code == self.CAPTCHA_NEEDED
+        return self.code == CAPTCHA_IS_NEEDED
+
+    def is_user_deleted_or_banned(self):
+        return self.code == USER_IS_DELETED_OR_BANNED
 
     @property
     def captcha_sid(self):
