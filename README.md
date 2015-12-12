@@ -49,6 +49,10 @@ it will be handled automatically, otherwise console input will be asked
         app_id=123, login='User', password='Password', phone_number='+79111234567')
 
 
+## API docs
+https://vk.com/dev/methods
+
+
 ## Tests
     
     tox
