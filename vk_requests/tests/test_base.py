@@ -1,9 +1,7 @@
 # coding=utf8
 import unittest
 import os.path as op
-import vk_requests
 import vk_requests.utils as utils
-from vk_requests.settings import USER_LOGIN, USER_PASSWORD, APP_ID
 
 
 FIXTURES_PATH = '/'.join([op.abspath(op.dirname(__file__)), 'fixtures'])

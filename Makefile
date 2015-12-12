@@ -23,7 +23,7 @@ clean:
 env:
 # target: env - create virtualenv and install packages
 	@virtualenv $(VIRTUAL_ENV)
-	@$(VIRTUAL_ENV)/bin/pip install -r $(CURDIR)/requirements-dev.txt
+	@$(VIRTUAL_ENV)/bin/pip install -r $(CURDIR)/requirements-test.txt
 
 
 # ===============

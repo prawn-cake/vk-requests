@@ -12,13 +12,18 @@ logger = logging.getLogger('vk-requests')
 
 
 class API(object):
-    def __init__(self, session, timeout=10, **method_default_args):
+    def __init__(self, session, timeout=10, **default_request_kwargs):
         self._session = session
         self._timeout = timeout
-        self._method_default_args = method_default_args
+        self._default_request_kwargs = default_request_kwargs
 
-    def get_default_args(self):
-        return self._method_default_args.copy()
+    def get_default_kwargs(self):
+        """Getter method.
+        It is used in vk_requests.auth.VKSession.send_api_request
+
+        :return: copy of default requests kwargs dict
+        """
+        return self._default_request_kwargs.copy()
 
     def get_timeout(self):
         return self._timeout
@@ -28,9 +33,6 @@ class API(object):
 
     def __getattr__(self, method_name):
         return Request(self, method_name)
-
-    def __call__(self, method_name, **method_kwargs):
-        return getattr(self, method_name)(**method_kwargs)
 
 
 class Request(object):

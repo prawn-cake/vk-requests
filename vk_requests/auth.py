@@ -4,7 +4,7 @@ import logging
 import abc
 from vk_requests.exceptions import VkAuthError, VkAPIError
 from vk_requests.utils import raw_input, parse_url_query_params, \
-    LoggingSession, get_form_action, json_iter_parse, \
+    VerboseHTTPSession, get_form_action, json_iter_parse, \
     stringify_values, get_masked_phone_number
 import six
 
@@ -23,7 +23,8 @@ class BaseAuthAPI(object):
     API_VERSION = '5.40'
 
     def __init__(self, app_id=None, user_login='', user_password='',
-                 scope='offline', phone_number=None, **kwargs):
+                 scope='offline', phone_number=None, api_version=None,
+                 **kwargs):
         logger.debug('Init AuthMixin: %r', self)
 
         self.app_id = app_id
@@ -32,10 +33,10 @@ class BaseAuthAPI(object):
         self._kwargs = kwargs
         self.scope = scope
         self._access_token = None
+        self._api_version = api_version or self.API_VERSION
 
         # using for auto-authentication in case when it's required by login
         # form, for instance when you try to login from unusual place
-        # TODO: add to readme this feature
         self._phone_number = phone_number
 
         # Some API methods get args (e.g. user id) from access token.
@@ -44,9 +45,9 @@ class BaseAuthAPI(object):
             self.renew_access_token()
 
     def __repr__(self):
-        return '%s(app_id=%d, login=%s, password=%s, **kwargs=%s)' % (
+        return '%s(app_id=%d, login=%s, password=%s (masked), **kwargs=%s)' % (
             self.__class__.__name__, self.app_id, self._login,
-            self._password, self._kwargs)
+            bool(self._password), self._kwargs)
 
     @property
     def access_token(self):
@@ -99,7 +100,7 @@ class AuthAPI(BaseAuthAPI):
                     self.app_id, self._login, bool(self._password)))
 
         logger.info("Getting access token for user '%s'" % self._login)
-        with LoggingSession() as s:
+        with VerboseHTTPSession() as s:
             self.do_login(session=s)
             url_query_params = self.do_oauth2_authorization(session=s)
 
@@ -161,7 +162,7 @@ class AuthAPI(BaseAuthAPI):
             'display': 'mobile',
             'response_type': 'token',
             'scope': self.scope,
-            'v': self.API_VERSION
+            'v': self._api_version
         }
         response = session.post(self.AUTHORIZE_URL, auth_data)
         url_query_params = parse_url_query_params(response.url)
@@ -233,7 +234,7 @@ class AuthAPI(BaseAuthAPI):
         phone_prefix, phone_suffix = get_masked_phone_number(html)
 
         if self._phone_number:
-            code = self._phone_number.lstrip(phone_prefix).rstrip(phone_suffix)
+            code = self._phone_number[len(phone_prefix):-len(phone_suffix)]
         else:
             prompt = 'Phone number (%s****%s): ' % (phone_prefix, phone_suffix)
             code = raw_input(prompt)
@@ -255,14 +256,22 @@ class InteractiveAuthAPI(AuthAPI):
     """Interactive auth api with manual login, password, captcha management"""
 
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        super(InteractiveAuthAPI, self).__init__(**kwargs)
         self._login = InteractiveAuthAPI.get_user_login()
         self._password = InteractiveAuthAPI.get_user_password()
+        self.app_id = kwargs.get('app_id')
+        if not self.app_id:
+            self.app_id = InteractiveAuthAPI.get_app_id()
 
     @staticmethod
     def get_user_login():
         user_login = raw_input('VK user login: ')
         return user_login.strip()
+
+    @staticmethod
+    def get_app_id():
+        user_login = raw_input('VK app id: ')
+        return int(user_login.strip())
 
     @staticmethod
     def get_user_password():
@@ -299,21 +308,24 @@ class VKSession(object):
     API_URL = 'https://api.vk.com/method/'
     AUTH_API_CLS = AuthAPI
 
-    def __init__(self, app_id=None, user_login=None, user_password=None):
-        self.auth_api = VKSession.get_auth_api(
-            app_id, user_login, user_password)
-
+    def __init__(self, app_id=None, user_login=None, user_password=None,
+                 phone_number=None):
+        self.auth_api = self.get_auth_api(app_id=app_id,
+                                          login=user_login,
+                                          password=user_password,
+                                          phone_number=phone_number)
         self.censored_access_token = None
         # Require token if any of auth parameters are being passed
         self.is_token_required = any([app_id, user_login, user_password])
 
         # requests.Session subclass instance
-        self.http_session = LoggingSession()
+        self.http_session = VerboseHTTPSession()
         self.http_session.headers['Accept'] = 'application/json'
-        self.http_session.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+        self.http_session.headers['Content-Type'] = \
+            'application/x-www-form-urlencoded'
 
     @classmethod
-    def get_auth_api(cls, app_id, login, password):
+    def get_auth_api(cls, app_id, login, password, phone_number):
         """Get auth api instance
         """
 
@@ -322,8 +334,10 @@ class VKSession(object):
                 'Wrong AUTH_API_CLS %s, must be subclass of %s' %
                 (cls.AUTH_API_CLS, BaseAuthAPI.__name__, ))
 
-        return cls.AUTH_API_CLS(
-            app_id=app_id, user_login=login, user_password=password)
+        return cls.AUTH_API_CLS(app_id=app_id,
+                                user_login=login,
+                                user_password=password,
+                                phone_number=phone_number)
 
     @property
     def access_token(self):
@@ -378,27 +392,26 @@ class VKSession(object):
                 # See more: https://vk.com/dev/execute
                 raise VkAPIError(response_or_error['execute_errors'][0])
             elif 'response' in response_or_error:
-                # todo Can we have error and response simultaneously
-                # for error in errors:
-                #     logger.warning(str(error))
-
                 return response_or_error['response']
 
     def send_api_request(self, request, captcha_response=None):
         url = self.API_URL + request.get_method_name()
         vk_api = request.get_api()
 
-        method_args = vk_api.get_default_args()
-        method_args.update(stringify_values(request.get_method_args()))
+        # Prepare request arguments
+        method_kwargs = {}
+        for values in (vk_api.get_default_kwargs(), request.get_method_args()):
+            method_kwargs.update(stringify_values(values))
+
         if self.is_token_required:
             # Auth api call if access_token weren't be got earlier
-            method_args['access_token'] = self.access_token
+            method_kwargs['access_token'] = self.access_token
         if captcha_response:
-            method_args['captcha_sid'] = captcha_response['sid']
-            method_args['captcha_key'] = captcha_response['key']
+            method_kwargs['captcha_sid'] = captcha_response['sid']
+            method_kwargs['captcha_key'] = captcha_response['key']
 
         response = self.http_session.post(
-            url, method_args, timeout=vk_api.get_timeout())
+            url=url, data=method_kwargs, timeout=vk_api.get_timeout())
         return response
 
     def __repr__(self):

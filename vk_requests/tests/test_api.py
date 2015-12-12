@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 import time
 import unittest
+import six
 import vk_requests
 from vk_requests.api import API
 from vk_requests.exceptions import VkAPIError
-from vk_requests.tests.test_base import APP_ID, USER_LOGIN, USER_PASSWORD
+from vk_requests.settings import APP_ID, USER_LOGIN, USER_PASSWORD, \
+    PHONE_NUMBER
 
 
 class VkApiInstanceTest(unittest.TestCase):
@@ -15,11 +17,13 @@ class VkApiInstanceTest(unittest.TestCase):
 
     def test_create_api_with_token(self):
         api = vk_requests.create_api(
-            app_id=APP_ID, login=USER_LOGIN, password=USER_PASSWORD)
+            app_id=APP_ID, login=USER_LOGIN, password=USER_PASSWORD,
+            phone_number=PHONE_NUMBER)
         self.assertIsInstance(api, API)
 
         # Check that we have got access token on init
-        self.assertIsInstance(api._session.auth_api._access_token, str)
+        self.assertIsInstance(
+            api._session.auth_api._access_token, six.string_types)
 
 
 class VkTestCase(unittest.TestCase):
@@ -69,7 +73,7 @@ class VkTestCase(unittest.TestCase):
 
     def test_get_friends(self):
         items = self.vk_api.friends.get(
-            fields="nickname,city,can_see_all_posts",
+            fields=['nickname', 'city', 'can_see_all_posts'],
             user_id=1)
         self.assertIsInstance(items, list)
         for item in items:
@@ -78,5 +82,17 @@ class VkTestCase(unittest.TestCase):
                 continue
             self.assertIsInstance(item, dict)
             self.assertIn('city', item)
+            self.assertIn('nickname', item)
             self.assertIn('user_id', item)
+            self.assertIn('uid', item)
             self.assertIn('can_see_all_posts', item)
+
+    @unittest.skip('Custom test')
+    def test_execute(self):
+        api = vk_requests.create_api(
+            app_id=APP_ID,
+            login=USER_LOGIN,
+            password=USER_PASSWORD
+        )
+        resp = api.execute.wallMultiGet(user1=1)
+        print(resp)

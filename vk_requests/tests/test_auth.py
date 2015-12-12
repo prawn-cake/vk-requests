@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import unittest
 import mock
-from vk_requests.auth import AuthAPI
+from vk_requests import API
+from vk_requests.auth import AuthAPI, InteractiveVKSession
 from vk_requests.tests.test_base import get_fixture
 
 
@@ -20,3 +21,9 @@ class AuthAPITest(unittest.TestCase):
         call = tuple(session_mock.post.call_args_list[0])[1]
         self.assertEqual(call['data']['act'], 'security_check')
         self.assertEqual(call['data']['code'], '567')
+
+    @unittest.skip('Require console input')
+    def test_interactive_session_init(self):
+        session = InteractiveVKSession()
+        api = API(session=session, timeout=10)
+        self.assertIsInstance(api, API)
