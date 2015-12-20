@@ -26,6 +26,20 @@ class UtilsTestCase(unittest.TestCase):
         self.assertEqual({1: u'стр,стр2'}, utils.stringify_values(
             {1: [u'стр', u'стр2']}))
 
+    def test_stringify_string_values(self):
+        # Expect the string will be set as is
+        data = {'fields': 'owner'}
+        self.assertEqual(utils.stringify_values(data), {'fields': 'owner'})
+
+        data_2 = {'fields': ['owner']}
+        self.assertEqual(utils.stringify_values(data_2), {'fields': 'owner'})
+
+    def test_stringify_wrong_input(self):
+        with self.assertRaises(ValueError) as err:
+            values = utils.stringify_values('wrong input')
+            self.assertIsNone(values)
+            self.assertIn('Data must be dict', str(err))
+
     def test_parse_url_query_params(self):
         resp_url = 'https://m.vk.com/login.php?act=security_check&to=&al_page='
         params = utils.parse_url_query_params(resp_url, fragment=False)
