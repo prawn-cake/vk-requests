@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='vk-requests',
-    version='0.9.0',
+    version='0.9.1',
     packages=['vk_requests', 'vk_requests.tests'],
     url='https://github.com/prawn-cake/vk-requests',
     license='MIT',
