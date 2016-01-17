@@ -12,6 +12,13 @@ This library is significantly improved fork of [vk](https://github.com/dimka665/
     api = vk_requests.create_api(app_id=123, login='User', password='Password')
     api.users.get(user_ids=1)
     [{'first_name': 'Pavel', 'last_name': 'Durov', 'id': 1}]
+    
+### Custom scope or api version requests
+
+Just pass `scope` and/or `api_version` parameters like
+
+    api = vk_requests.create_api(..., scope=['offline', 'status'], api_version='5.00')
+    api.status.set(text='Hello world!')
 
 
 ## Features

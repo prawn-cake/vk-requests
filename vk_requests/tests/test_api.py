@@ -25,10 +25,23 @@ class VkApiInstanceTest(unittest.TestCase):
         self.assertIsInstance(
             api._session.auth_api._access_token, six.string_types)
 
+    def test_create_api_with_custom_api_version(self):
+        api = vk_requests.create_api(api_version='5.00')
+        self.assertEqual(api._session.auth_api.api_version, '5.00')
+
 
 class VkTestCase(unittest.TestCase):
     def setUp(self):
         self.vk_api = vk_requests.create_api(lang='ru')
+
+    @staticmethod
+    def _create_api(**kwargs):
+        return vk_requests.create_api(
+            app_id=APP_ID,
+            login=USER_LOGIN,
+            password=USER_PASSWORD,
+            **kwargs
+        )
 
     def test_get_server_time(self):
         time_1 = time.time() - 1
@@ -62,8 +75,7 @@ class VkTestCase(unittest.TestCase):
             self.assertIn('no access_token passed', str(err))
 
         # Create token-based API
-        api = vk_requests.create_api(
-            app_id=APP_ID, login=USER_LOGIN, password=USER_PASSWORD)
+        api = self._create_api()
         resp = api.users.search(**request_opts)
         total_num, items = resp[0], resp[1:]
         self.assertIsInstance(total_num, int)
@@ -87,12 +99,23 @@ class VkTestCase(unittest.TestCase):
             self.assertIn('uid', item)
             self.assertIn('can_see_all_posts', item)
 
-    @unittest.skip('Custom test')
+    @unittest.skip('Custom method test')
     def test_execute(self):
-        api = vk_requests.create_api(
-            app_id=APP_ID,
-            login=USER_LOGIN,
-            password=USER_PASSWORD
-        )
+        api = self._create_api()
         resp = api.execute.wallMultiGet(user1=1)
         print(resp)
+
+    def test_set_status(self):
+        """Test requires scope='status' vk permissions
+        """
+        status_text = 'Welcome to noagent.168.estate'
+        api = self._create_api(scope=['offline', 'status'])
+        self.assertEqual(api._session.auth_api.scope, ['offline', 'status'])
+
+        # Set the status
+        resp = api.status.set(text=status_text)
+        self.assertEqual(resp, 1)
+
+        # Check the status
+        resp = api.status.get()
+        self.assertEqual(resp, {'text': status_text})
