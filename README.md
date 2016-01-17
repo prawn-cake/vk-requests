@@ -1,5 +1,8 @@
 ![VKRequestsIcon](https://www.dropbox.com/s/dv9oy3i8nlmdo50/vk_icon.png?dl=1) requests for humans
 ========================================================================================================
+[![Build Status](https://travis-ci.org/prawn-cake/vk-requests.svg?branch=master)](https://travis-ci.org/prawn-cake/vk-requests)
+[![Coverage Status](https://coveralls.io/repos/prawn-cake/vk-requests/badge.svg?branch=master&service=github)](https://coveralls.io/github/prawn-cake/vk-requests?branch=master)
+![PythonVersions](https://www.dropbox.com/s/ck0nc28ttga2pw9/python-2.7_3.4-blue.svg?dl=1)
 
 [vk.com](https://vk.com) is the largest social network in Russia.
 This library is significantly improved fork of [vk](https://github.com/dimka665/vk)
