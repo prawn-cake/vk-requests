@@ -20,7 +20,7 @@ class BaseAuthAPI(object):
     # REDIRECT_URI = 'https://oauth.vk.com/blank.html'
     AUTHORIZE_URL = 'https://oauth.vk.com/authorize'
     CAPTCHA_URI = 'https://m.vk.com/captcha.php'
-    API_VERSION = '5.40'
+    DEFAULT_API_VERSION = '5.44'
 
     def __init__(self, app_id=None, user_login='', user_password='',
                  scope='offline', phone_number=None, api_version=None,
@@ -33,7 +33,7 @@ class BaseAuthAPI(object):
         self._kwargs = kwargs
         self.scope = scope
         self._access_token = None
-        self._api_version = api_version or self.API_VERSION
+        self._api_version = api_version
 
         # using for auto-authentication in case when it's required by login
         # form, for instance when you try to login from unusual place
@@ -45,9 +45,22 @@ class BaseAuthAPI(object):
             self.renew_access_token()
 
     def __repr__(self):
-        return '%s(app_id=%d, login=%s, password=%s (masked), **kwargs=%s)' % (
-            self.__class__.__name__, self.app_id, self._login,
-            bool(self._password), self._kwargs)
+        """This tricky method needs for tox tests. Otherwise it raises an
+        AttributeError, haven't dug into this issue
+        """
+        params = {}
+        attrs = ('app_id', 'login', '_kwargs')
+        for attr in attrs:
+            if hasattr(self, attr):
+                params[attr] = getattr(self, attr)
+
+        return '%s(%s)' % (
+            self.__class__.__name__,
+            ','.join(['%s=%s' % (k, v) for k, v in params.items()]))
+
+    @property
+    def api_version(self):
+        return self._api_version or self.DEFAULT_API_VERSION
 
     @property
     def access_token(self):
@@ -162,7 +175,7 @@ class AuthAPI(BaseAuthAPI):
             'display': 'mobile',
             'response_type': 'token',
             'scope': self.scope,
-            'v': self._api_version
+            'v': self.api_version
         }
         response = session.post(self.AUTHORIZE_URL, auth_data)
         url_query_params = parse_url_query_params(response.url)
@@ -309,11 +322,12 @@ class VKSession(object):
     AUTH_API_CLS = AuthAPI
 
     def __init__(self, app_id=None, user_login=None, user_password=None,
-                 phone_number=None):
+                 phone_number=None, **api_kwargs):
         self.auth_api = self.get_auth_api(app_id=app_id,
                                           login=user_login,
                                           password=user_password,
-                                          phone_number=phone_number)
+                                          phone_number=phone_number,
+                                          **api_kwargs)
         self.censored_access_token = None
         # Require token if any of auth parameters are being passed
         self.is_token_required = any([app_id, user_login, user_password])
@@ -325,7 +339,7 @@ class VKSession(object):
             'application/x-www-form-urlencoded'
 
     @classmethod
-    def get_auth_api(cls, app_id, login, password, phone_number):
+    def get_auth_api(cls, app_id, login, password, phone_number, **api_kwargs):
         """Get auth api instance
         """
 
@@ -337,7 +351,8 @@ class VKSession(object):
         return cls.AUTH_API_CLS(app_id=app_id,
                                 user_login=login,
                                 user_password=password,
-                                phone_number=phone_number)
+                                phone_number=phone_number,
+                                **api_kwargs)
 
     @property
     def access_token(self):

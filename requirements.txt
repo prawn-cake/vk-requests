@@ -1,2 +1,2 @@
 requests == 2.8.1
-six
+six == 1.10.0
