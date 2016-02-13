@@ -141,11 +141,15 @@ class AuthAPI(BaseAuthAPI):
         response_url_query = parse_url_query_params(
             response.url, fragment=False)
         act = response_url_query.get('act')
+        logger.debug('response_url_query: %s', response_url_query)
 
         # Check response url query params firstly
         if 'sid' in response_url_query:
             self.require_auth_captcha(
-                response, login_form_data, session=session)
+                query_params=response_url_query,
+                form_text=response.text,
+                login_form_data=login_form_data,
+                session=session)
 
         elif act == 'authcheck':
             self.require_sms_code(response.text, session=session)
@@ -218,21 +222,30 @@ class AuthAPI(BaseAuthAPI):
         response = session.post(auth_check_form_action, data=auth_check_data)
         return response
 
-    def require_auth_captcha(self, response, login_form_data, session):
+    def require_auth_captcha(self, query_params, form_text, login_form_data,
+                             session):
+        """Resolve auth captcha case
+
+        :param query_params: dict: response query params, for example:
+        {'s': '0', 'email': 'my@email', 'dif': '1', 'role': 'fast', 'sid': '1'}
+
+        :param form_text: str: raw form html data
+        :param login_form_data: dict
+        :param session: requests.Session
+        :return: :raise VkAuthError:
+        """
         logger.info('Captcha is needed')
 
-        response_url_dict = parse_url_query_params(response.url)
-        captcha_form_action = get_form_action(response.text)
+        captcha_form_action = get_form_action(form_text)
         logger.debug('form_url %s', captcha_form_action)
         if not captcha_form_action:
             raise VkAuthError('Cannot find form url')
 
-        # TODO: Are we sure that `response_url_dict` doesn't contain CAPTCHA image url?
         captcha_url = '%s?s=%s&sid=%s' % (
-            self.CAPTCHA_URI, response_url_dict['s'], response_url_dict['sid'])
-        # logger.debug('Captcha url %s', captcha_url)
+            self.CAPTCHA_URI, query_params['s'], query_params['sid'])
+        logger.info('Captcha url %s', captcha_url)
 
-        login_form_data['captcha_sid'] = response_url_dict['sid']
+        login_form_data['captcha_sid'] = query_params['sid']
         login_form_data['captcha_key'] = self.get_captcha_key(captcha_url)
 
         response = session.post(captcha_form_action, login_form_data)
@@ -319,10 +332,12 @@ class InteractiveAuthAPI(AuthAPI):
 
 class VKSession(object):
     API_URL = 'https://api.vk.com/method/'
-    AUTH_API_CLS = AuthAPI
+    DEFAULT_AUTH_API_CLS = AuthAPI
 
     def __init__(self, app_id=None, user_login=None, user_password=None,
-                 phone_number=None, **api_kwargs):
+                 phone_number=None, auth_api_cls=None, **api_kwargs):
+
+        self.auth_api_cls = auth_api_cls or self.DEFAULT_AUTH_API_CLS
         self.auth_api = self.get_auth_api(app_id=app_id,
                                           login=user_login,
                                           password=user_password,
@@ -338,21 +353,20 @@ class VKSession(object):
         self.http_session.headers['Content-Type'] = \
             'application/x-www-form-urlencoded'
 
-    @classmethod
-    def get_auth_api(cls, app_id, login, password, phone_number, **api_kwargs):
-        """Get auth api instance
-        """
+    def get_auth_api(self, app_id, login, password, phone_number,
+                     **api_kwargs):
+        """Get auth api instance"""
 
-        if not issubclass(cls.AUTH_API_CLS, BaseAuthAPI):
+        if not issubclass(self.auth_api_cls, BaseAuthAPI):
             raise TypeError(
                 'Wrong AUTH_API_CLS %s, must be subclass of %s' %
-                (cls.AUTH_API_CLS, BaseAuthAPI.__name__, ))
+                (self.auth_api_cls, BaseAuthAPI.__name__, ))
 
-        return cls.AUTH_API_CLS(app_id=app_id,
-                                user_login=login,
-                                user_password=password,
-                                phone_number=phone_number,
-                                **api_kwargs)
+        return self.auth_api_cls(app_id=app_id,
+                                 user_login=login,
+                                 user_password=password,
+                                 phone_number=phone_number,
+                                 **api_kwargs)
 
     @property
     def access_token(self):
@@ -435,4 +449,4 @@ class VKSession(object):
 
 
 class InteractiveVKSession(VKSession):
-    AUTH_API_CLS = InteractiveAuthAPI
+    DEFAULT_AUTH_API_CLS = InteractiveAuthAPI
