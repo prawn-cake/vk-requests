@@ -2,10 +2,11 @@
 
 import logging
 import abc
+import bs4
 from vk_requests.exceptions import VkAuthError, VkAPIError
 from vk_requests.utils import raw_input, parse_url_query_params, \
-    VerboseHTTPSession, get_form_action, json_iter_parse, \
-    stringify_values, get_masked_phone_number
+    VerboseHTTPSession, parse_form_action_url, json_iter_parse, \
+    stringify_values, parse_masked_phone_number, check_html_warnings
 import six
 
 
@@ -130,7 +131,7 @@ class AuthAPI(BaseAuthAPI):
         """
 
         response = session.get(self.LOGIN_URL)
-        login_form_action = get_form_action(response.text)
+        login_form_action = parse_form_action_url(response.text)
         if not login_form_action:
             raise VkAuthError('VK changed login flow')
 
@@ -152,15 +153,13 @@ class AuthAPI(BaseAuthAPI):
                 session=session)
 
         elif act == 'authcheck':
-            self.require_sms_code(response.text, session=session)
+            self.require_sms_code(html=response.text, session=session)
 
         elif act == 'security_check':
-            # Interactive call
             self.require_phone_number(html=response.text, session=session)
 
         session_cookies = ('remixsid' in session.cookies,
                            'remixsid6' in session.cookies)
-
         if any(session_cookies):
             # Session is already established
             logger.info('Session is already established')
@@ -191,7 +190,7 @@ class AuthAPI(BaseAuthAPI):
 
         # Permissions is needed
         logger.info('Getting permissions')
-        form_action = get_form_action(response.text)
+        form_action = parse_form_action_url(response.text)
         logger.debug('Response form action: %s', form_action)
 
         if form_action:
@@ -212,7 +211,7 @@ class AuthAPI(BaseAuthAPI):
     def require_sms_code(self, html, session):
         logger.info('User enabled 2 factors authorization. '
                     'Auth check code is needed')
-        auth_check_form_action = get_form_action(html)
+        auth_check_form_action = parse_form_action_url(html)
         auth_check_code = self.get_sms_code()
         auth_check_data = {
             'code': auth_check_code,
@@ -236,7 +235,7 @@ class AuthAPI(BaseAuthAPI):
         """
         logger.info('Captcha is needed')
 
-        captcha_form_action = get_form_action(form_text)
+        captcha_form_action = parse_form_action_url(form_text)
         logger.debug('form_url %s', captcha_form_action)
         if not captcha_form_action:
             raise VkAuthError('Cannot find form url')
@@ -254,10 +253,17 @@ class AuthAPI(BaseAuthAPI):
     def require_phone_number(self, html, session):
         logger.info(
             'Auth requires phone number. You do login from unusual place')
-        form_action_url = get_form_action(html)
+
+        # Raises VkPageWarningsError in case of warnings
+        # NOTE: we check only 'security_check' case on warnings for now
+        # in future it might be propagated to other cases as well
+        check_html_warnings(html=html)
+
+        # Determine form action
+        form_action_url = parse_form_action_url(html)
 
         # Get masked phone from html to make things more clear
-        phone_prefix, phone_suffix = get_masked_phone_number(html)
+        phone_prefix, phone_suffix = parse_masked_phone_number(html)
 
         if self._phone_number:
             code = self._phone_number[len(phone_prefix):-len(phone_suffix)]
@@ -376,7 +382,8 @@ class VKSession(object):
     def access_token(self, value):
         self.auth_api._access_token = value
         if isinstance(value, six.string_types) and len(value) >= 12:
-            self.censored_access_token = '{}***{}'.format(value[:4], value[-4:])
+            self.censored_access_token = '{}***{}'.format(
+                value[:4], value[-4:])
         else:
             self.censored_access_token = value
         logger.debug('access_token = %r', self.censored_access_token)

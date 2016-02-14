@@ -22,6 +22,13 @@ Just pass `scope` and/or `api_version` parameters like
 
     api = vk_requests.create_api(..., scope=['offline', 'status'], api_version='5.00')
     api.status.set(text='Hello world!')
+    
+### Enable debug logger
+From your code:
+    
+    import logging
+    
+    logging.getLogger('vk-requests').setLevel(logging.DEBUG)
 
 
 ## Features

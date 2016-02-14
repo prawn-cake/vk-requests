@@ -1,11 +1,12 @@
 # coding=utf8
 
 import six
-import re
 import json
 import requests
 import logging
+import bs4
 from collections import Iterable
+from vk_requests.exceptions import VkParseError, VkPageWarningsError
 
 
 logger = logging.getLogger('vk-requests')
@@ -67,7 +68,7 @@ def stringify_values(data):
 def parse_url_query_params(url, fragment=True):
     """Parse url query params
 
-    :param fragment: bool: flag which is used for parsing oauth url
+    :param fragment: bool: flag is used for parsing oauth url
     :param url: str: url string
     :return: dict
     """
@@ -81,20 +82,63 @@ def parse_url_query_params(url, fragment=True):
     return url_query
 
 
-def get_form_action(html):
-    form_action = re.findall(r'<form(?= ).* action="(.+)"', html)
-    if form_action:
-        return form_action[0]
+def parse_form_action_url(html, parser=None):
+    """Parse <form action="(.+)"> url
 
-
-def get_masked_phone_number(html):
-    """Get masked phone number from security check html
+    :param html: str: raw html text
+    :param parser: bs4.BeautifulSoup: html parser
+    :return: url str: for example: /login.php?act=security_check&to=&hash=12346
     """
-    fields = re.findall(r'<span class="field_prefix">(.*)</span>', html)
+    if parser is None:
+        parser = bs4.BeautifulSoup(html, 'html.parser')
+
+    forms = parser.find_all('form')
+    if not forms:
+        raise VkParseError('No one form is found in \n%s' % html)
+    if len(forms) > 1:
+        raise VkParseError('Find more than 1 forms to handle:\n%s', forms)
+    form = forms[0]
+    return form.get('action')
+
+
+def parse_masked_phone_number(html, parser=None):
+    """Get masked phone number from security check html
+
+    :param html: str: raw html text
+    :param parser: bs4.BeautifulSoup: html parser
+    :return: tuple of phone prefix and suffix, for example: ('+1234', '89')
+    :rtype : tuple
+    """
+    if parser is None:
+        parser = bs4.BeautifulSoup(html, 'html.parser')
+
+    fields = parser.find_all('span', {'class': 'field_prefix'})
+    if not fields:
+        raise VkParseError(
+            'No <span class="field_prefix">...</span> in the \n%s' % html)
+
     result = []
-    for field in fields:
-        result.append(field.replace('&nbsp;', ''))
+    for f in fields:
+        value = f.get_text().replace(six.u('\xa0'), '')
+        result.append(value)
     return tuple(result)
+
+
+def check_html_warnings(html, parser=None):
+    """Check html warnings
+
+    :param html: str: raw html text
+    :param parser: bs4.BeautifulSoup: html parser
+    :raise VkPageWarningsError: in case of found warnings
+    """
+    if parser is None:
+        parser = bs4.BeautifulSoup(html, 'html.parser')
+
+    # Check warnings
+    warnings = parser.find_all('div', {'class': 'service_msg_warning'})
+    if warnings:
+        raise VkPageWarningsError('; '.join([w.get_text() for w in warnings]))
+    return True
 
 
 class VerboseHTTPSession(requests.Session):

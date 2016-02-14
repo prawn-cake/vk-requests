@@ -11,6 +11,7 @@ setup(
     description='vk.com requests for humans. API library for vk.com',
     install_requires=[
         'six',
-        'requests==2.8.1'
+        'requests==2.8.1',
+        'beautifulsoup4==4.4.1'
     ]
 )

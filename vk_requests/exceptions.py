@@ -16,6 +16,16 @@ class VkAuthError(VkException):
     pass
 
 
+class VkParseError(VkAuthError):
+    """Raised when html has unexpected format"""
+    pass
+
+
+class VkPageWarningsError(VkParseError):
+    """Raised when html has some warnings on the page"""
+    pass
+
+
 class VkAPIError(VkException):
     __slots__ = ['error', 'code', 'message', 'request_params', 'redirect_uri']
 
