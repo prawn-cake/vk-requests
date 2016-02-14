@@ -63,8 +63,9 @@ class VkAPIError(VkException):
         return self.error_data.get('captcha_img')
 
     def __str__(self):
-        error_message = "error_code=%s, message='%s', request_params=%s" % (
-            self.code, self.message, self.request_params)
+        tokens = ['error_code=%s' % self.code,
+                  'message=\'%s\'' % self.message,
+                  'request_params=%s' % self.request_params]
         if self.redirect_uri:
-            error_message += ", redirect_uri='%s'" % self.redirect_uri
-        return error_message
+            tokens.append('redirect_uri=\'%s\'' % self.redirect_uri)
+        return ','.join(tokens)
