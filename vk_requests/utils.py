@@ -19,13 +19,6 @@ except ImportError:
     # Python 3
     from urllib.parse import urlparse, parse_qsl, urlencode
 
-try:
-    # Python 2
-    raw_input = raw_input
-except NameError:
-    # Python 3
-    raw_input = input
-
 
 def json_iter_parse(response_text):
     decoder = json.JSONDecoder(strict=False)

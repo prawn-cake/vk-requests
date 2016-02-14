@@ -2,12 +2,14 @@
 
 import logging
 import abc
-import bs4
-from vk_requests.exceptions import VkAuthError, VkAPIError
-from vk_requests.utils import raw_input, parse_url_query_params, \
-    VerboseHTTPSession, parse_form_action_url, json_iter_parse, \
-    stringify_values, parse_masked_phone_number, check_html_warnings
+
 import six
+
+from vk_requests.exceptions import VkAuthError, VkAPIError
+from vk_requests.utils import parse_url_query_params, VerboseHTTPSession, \
+    parse_form_action_url, json_iter_parse, stringify_values, \
+    parse_masked_phone_number, check_html_warnings
+from six.moves import input as raw_input
 
 
 logger = logging.getLogger('vk-requests')
