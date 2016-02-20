@@ -4,6 +4,7 @@ import logging
 import abc
 
 import six
+import warnings
 
 from vk_requests.exceptions import VkAuthError, VkAPIError
 from vk_requests.utils import parse_url_query_params, VerboseHTTPSession, \
@@ -343,8 +344,19 @@ class VKSession(object):
     API_URL = 'https://api.vk.com/method/'
     DEFAULT_AUTH_API_CLS = AuthAPI
 
+    # FIXME: DEPRECATED and will be removed after version > 0.9.2
+    AUTH_API_CLS = None
+
     def __init__(self, app_id=None, user_login=None, user_password=None,
                  phone_number=None, auth_api_cls=None, **api_kwargs):
+
+        # Override DEFAULT_AUTH_API_CLS for backward compatibility
+        if self.AUTH_API_CLS:
+            warnings.warn('AUTH_API_CLS is deprecated, please use '
+                          'DEFAULT_AUTH_API_CLS instead, it will be removed '
+                          'after version > 0.9.2',
+                          DeprecationWarning)
+            self.DEFAULT_AUTH_API_CLS = self.AUTH_API_CLS
 
         self.auth_api_cls = auth_api_cls or self.DEFAULT_AUTH_API_CLS
         self.auth_api = self.get_auth_api(app_id=app_id,
