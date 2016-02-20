@@ -119,3 +119,14 @@ class VkTestCase(unittest.TestCase):
         # Check the status
         resp = api.status.get()
         self.assertEqual(resp, {'text': status_text})
+
+    def test_multi_scope_requests(self):
+        api = self._create_api(scope=['messages', 'status'])
+        resp = api.status.get()
+        self.assertIn('text', resp)
+
+        resp = api.messages.get()
+        total_msg, msg_list = resp[0], resp[1:]
+        self.assertIsInstance(total_msg, int)
+        for msg in msg_list:
+            self.assertIsInstance(msg, dict)

@@ -182,7 +182,8 @@ class AuthAPI(BaseAuthAPI):
             'scope': self.scope,
             'v': self.api_version
         }
-        response = session.post(self.AUTHORIZE_URL, auth_data)
+        response = session.post(url=self.AUTHORIZE_URL,
+                                data=stringify_values(auth_data))
         url_query_params = parse_url_query_params(response.url)
         if 'expires_in' in url_query_params:
             logger.info('Token will be expired in %s sec.' %
