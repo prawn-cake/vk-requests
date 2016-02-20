@@ -1,6 +1,7 @@
 # coding=utf8
 import unittest
 import os.path as op
+from vk_requests.exceptions import VkPageWarningsError
 import vk_requests.utils as utils
 
 
@@ -58,13 +59,24 @@ class UtilsTestCase(unittest.TestCase):
         self.assertEqual(params['expires_in'], '0')
         self.assertEqual(params['user_id'], '12345')
 
-    def test_get_form_action(self):
+    def test_parse_form_action(self):
         html = get_fixture('require_phone_num_resp.html')
-        form = utils.get_form_action(html)
+        form = utils.parse_form_action_url(html)
         self.assertEqual(
             form, '/login.php?act=security_check&to=&hash=4b07a4650e9f22038b')
 
-    def test_get_masked_phone_number(self):
+    def test_parse_masked_phone_number(self):
         html = get_fixture('require_phone_num_resp.html')
-        fields = utils.get_masked_phone_number(html)
+        fields = utils.parse_masked_phone_number(html)
         self.assertEqual(fields, ('+1234', '89'))
+
+    def test_check_html_warnings(self):
+        html = get_fixture('require_phone_num_resp.html')
+        html_with_warn = get_fixture('require_phone_num_warn_resp.html')
+
+        # No warnings - expect True
+        self.assertTrue(utils.check_html_warnings(html))
+        with self.assertRaises(VkPageWarningsError) as err:
+            result = utils.check_html_warnings(html_with_warn)
+            self.assertIsNone(result)
+            self.assertIn('Incorrect numbers.', str(err))

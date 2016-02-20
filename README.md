@@ -22,6 +22,13 @@ Just pass `scope` and/or `api_version` parameters like
 
     api = vk_requests.create_api(..., scope=['offline', 'status'], api_version='5.00')
     api.status.set(text='Hello world!')
+    
+### Enable debug logger
+From your code:
+    
+    import logging
+    
+    logging.getLogger('vk-requests').setLevel(logging.DEBUG)
 
 
 ## Features
@@ -40,14 +47,13 @@ Just pass `scope` and/or `api_version` parameters like
 ### Interactive session. 
 
 Useful for dev purposes. You will be asked about login, password and app_id 
-interactively in console
+interactively in console. Useful if capture required.
         
         from vk_requests.api import API
         from vk_requests.auth import InteractiveVKSession
         
         
-        session = InteractiveVKSession()
-        api = API(session=session, timeout=10)
+        api = vk_requests.create_api(..., session_cls=InteractiveVKSession)
 
 
 ### Auto-resolving conflicts when you getting access from unusual place

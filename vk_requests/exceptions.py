@@ -16,6 +16,16 @@ class VkAuthError(VkException):
     pass
 
 
+class VkParseError(VkAuthError):
+    """Raised when html has unexpected format"""
+    pass
+
+
+class VkPageWarningsError(VkParseError):
+    """Raised when html has some warnings on the page"""
+    pass
+
+
 class VkAPIError(VkException):
     __slots__ = ['error', 'code', 'message', 'request_params', 'redirect_uri']
 
@@ -53,8 +63,9 @@ class VkAPIError(VkException):
         return self.error_data.get('captcha_img')
 
     def __str__(self):
-        error_message = "error_code=%s, message='%s', request_params=%s" % (
-            self.code, self.message, self.request_params)
+        tokens = ['error_code=%s' % self.code,
+                  'message=\'%s\'' % self.message,
+                  'request_params=%s' % self.request_params]
         if self.redirect_uri:
-            error_message += ", redirect_uri='%s'" % self.redirect_uri
-        return error_message
+            tokens.append('redirect_uri=\'%s\'' % self.redirect_uri)
+        return ','.join(tokens)

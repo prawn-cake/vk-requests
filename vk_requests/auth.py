@@ -2,11 +2,15 @@
 
 import logging
 import abc
-from vk_requests.exceptions import VkAuthError, VkAPIError
-from vk_requests.utils import raw_input, parse_url_query_params, \
-    VerboseHTTPSession, get_form_action, json_iter_parse, \
-    stringify_values, get_masked_phone_number
+
 import six
+import warnings
+
+from vk_requests.exceptions import VkAuthError, VkAPIError
+from vk_requests.utils import parse_url_query_params, VerboseHTTPSession, \
+    parse_form_action_url, json_iter_parse, stringify_values, \
+    parse_masked_phone_number, check_html_warnings
+from six.moves import input as raw_input
 
 
 logger = logging.getLogger('vk-requests')
@@ -130,7 +134,7 @@ class AuthAPI(BaseAuthAPI):
         """
 
         response = session.get(self.LOGIN_URL)
-        login_form_action = get_form_action(response.text)
+        login_form_action = parse_form_action_url(response.text)
         if not login_form_action:
             raise VkAuthError('VK changed login flow')
 
@@ -141,22 +145,24 @@ class AuthAPI(BaseAuthAPI):
         response_url_query = parse_url_query_params(
             response.url, fragment=False)
         act = response_url_query.get('act')
+        logger.debug('response_url_query: %s', response_url_query)
 
         # Check response url query params firstly
         if 'sid' in response_url_query:
             self.require_auth_captcha(
-                response, login_form_data, session=session)
+                query_params=response_url_query,
+                form_text=response.text,
+                login_form_data=login_form_data,
+                session=session)
 
         elif act == 'authcheck':
-            self.require_sms_code(response.text, session=session)
+            self.require_sms_code(html=response.text, session=session)
 
         elif act == 'security_check':
-            # Interactive call
             self.require_phone_number(html=response.text, session=session)
 
         session_cookies = ('remixsid' in session.cookies,
                            'remixsid6' in session.cookies)
-
         if any(session_cookies):
             # Session is already established
             logger.info('Session is already established')
@@ -177,7 +183,8 @@ class AuthAPI(BaseAuthAPI):
             'scope': self.scope,
             'v': self.api_version
         }
-        response = session.post(self.AUTHORIZE_URL, auth_data)
+        response = session.post(url=self.AUTHORIZE_URL,
+                                data=stringify_values(auth_data))
         url_query_params = parse_url_query_params(response.url)
         if 'expires_in' in url_query_params:
             logger.info('Token will be expired in %s sec.' %
@@ -187,7 +194,7 @@ class AuthAPI(BaseAuthAPI):
 
         # Permissions is needed
         logger.info('Getting permissions')
-        form_action = get_form_action(response.text)
+        form_action = parse_form_action_url(response.text)
         logger.debug('Response form action: %s', form_action)
 
         if form_action:
@@ -208,7 +215,7 @@ class AuthAPI(BaseAuthAPI):
     def require_sms_code(self, html, session):
         logger.info('User enabled 2 factors authorization. '
                     'Auth check code is needed')
-        auth_check_form_action = get_form_action(html)
+        auth_check_form_action = parse_form_action_url(html)
         auth_check_code = self.get_sms_code()
         auth_check_data = {
             'code': auth_check_code,
@@ -218,21 +225,30 @@ class AuthAPI(BaseAuthAPI):
         response = session.post(auth_check_form_action, data=auth_check_data)
         return response
 
-    def require_auth_captcha(self, response, login_form_data, session):
+    def require_auth_captcha(self, query_params, form_text, login_form_data,
+                             session):
+        """Resolve auth captcha case
+
+        :param query_params: dict: response query params, for example:
+        {'s': '0', 'email': 'my@email', 'dif': '1', 'role': 'fast', 'sid': '1'}
+
+        :param form_text: str: raw form html data
+        :param login_form_data: dict
+        :param session: requests.Session
+        :return: :raise VkAuthError:
+        """
         logger.info('Captcha is needed')
 
-        response_url_dict = parse_url_query_params(response.url)
-        captcha_form_action = get_form_action(response.text)
+        captcha_form_action = parse_form_action_url(form_text)
         logger.debug('form_url %s', captcha_form_action)
         if not captcha_form_action:
             raise VkAuthError('Cannot find form url')
 
-        # TODO: Are we sure that `response_url_dict` doesn't contain CAPTCHA image url?
         captcha_url = '%s?s=%s&sid=%s' % (
-            self.CAPTCHA_URI, response_url_dict['s'], response_url_dict['sid'])
-        # logger.debug('Captcha url %s', captcha_url)
+            self.CAPTCHA_URI, query_params['s'], query_params['sid'])
+        logger.info('Captcha url %s', captcha_url)
 
-        login_form_data['captcha_sid'] = response_url_dict['sid']
+        login_form_data['captcha_sid'] = query_params['sid']
         login_form_data['captcha_key'] = self.get_captcha_key(captcha_url)
 
         response = session.post(captcha_form_action, login_form_data)
@@ -241,10 +257,17 @@ class AuthAPI(BaseAuthAPI):
     def require_phone_number(self, html, session):
         logger.info(
             'Auth requires phone number. You do login from unusual place')
-        form_action_url = get_form_action(html)
+
+        # Raises VkPageWarningsError in case of warnings
+        # NOTE: we check only 'security_check' case on warnings for now
+        # in future it might be propagated to other cases as well
+        check_html_warnings(html=html)
+
+        # Determine form action
+        form_action_url = parse_form_action_url(html)
 
         # Get masked phone from html to make things more clear
-        phone_prefix, phone_suffix = get_masked_phone_number(html)
+        phone_prefix, phone_suffix = parse_masked_phone_number(html)
 
         if self._phone_number:
             code = self._phone_number[len(phone_prefix):-len(phone_suffix)]
@@ -319,10 +342,23 @@ class InteractiveAuthAPI(AuthAPI):
 
 class VKSession(object):
     API_URL = 'https://api.vk.com/method/'
-    AUTH_API_CLS = AuthAPI
+    DEFAULT_AUTH_API_CLS = AuthAPI
+
+    # FIXME: DEPRECATED and will be removed after version > 0.9.2
+    AUTH_API_CLS = None
 
     def __init__(self, app_id=None, user_login=None, user_password=None,
-                 phone_number=None, **api_kwargs):
+                 phone_number=None, auth_api_cls=None, **api_kwargs):
+
+        # Override DEFAULT_AUTH_API_CLS for backward compatibility
+        if self.AUTH_API_CLS:
+            warnings.warn('AUTH_API_CLS is deprecated, please use '
+                          'DEFAULT_AUTH_API_CLS instead, it will be removed '
+                          'after version > 0.9.2',
+                          DeprecationWarning)
+            self.DEFAULT_AUTH_API_CLS = self.AUTH_API_CLS
+
+        self.auth_api_cls = auth_api_cls or self.DEFAULT_AUTH_API_CLS
         self.auth_api = self.get_auth_api(app_id=app_id,
                                           login=user_login,
                                           password=user_password,
@@ -338,21 +374,20 @@ class VKSession(object):
         self.http_session.headers['Content-Type'] = \
             'application/x-www-form-urlencoded'
 
-    @classmethod
-    def get_auth_api(cls, app_id, login, password, phone_number, **api_kwargs):
-        """Get auth api instance
-        """
+    def get_auth_api(self, app_id, login, password, phone_number,
+                     **api_kwargs):
+        """Get auth api instance"""
 
-        if not issubclass(cls.AUTH_API_CLS, BaseAuthAPI):
+        if not issubclass(self.auth_api_cls, BaseAuthAPI):
             raise TypeError(
                 'Wrong AUTH_API_CLS %s, must be subclass of %s' %
-                (cls.AUTH_API_CLS, BaseAuthAPI.__name__, ))
+                (self.auth_api_cls, BaseAuthAPI.__name__, ))
 
-        return cls.AUTH_API_CLS(app_id=app_id,
-                                user_login=login,
-                                user_password=password,
-                                phone_number=phone_number,
-                                **api_kwargs)
+        return self.auth_api_cls(app_id=app_id,
+                                 user_login=login,
+                                 user_password=password,
+                                 phone_number=phone_number,
+                                 **api_kwargs)
 
     @property
     def access_token(self):
@@ -362,7 +397,8 @@ class VKSession(object):
     def access_token(self, value):
         self.auth_api._access_token = value
         if isinstance(value, six.string_types) and len(value) >= 12:
-            self.censored_access_token = '{}***{}'.format(value[:4], value[-4:])
+            self.censored_access_token = '{}***{}'.format(
+                value[:4], value[-4:])
         else:
             self.censored_access_token = value
         logger.debug('access_token = %r', self.censored_access_token)
@@ -435,4 +471,4 @@ class VKSession(object):
 
 
 class InteractiveVKSession(VKSession):
-    AUTH_API_CLS = InteractiveAuthAPI
+    DEFAULT_AUTH_API_CLS = InteractiveAuthAPI
