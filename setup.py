@@ -1,9 +1,9 @@
-from distutils.core import setup
+from setuptools import setup
 
 setup(
     name='vk-requests',
     version='0.9.2',
-    packages=['vk_requests', 'vk_requests.tests'],
+    packages=['vk_requests'],
     url='https://github.com/prawn-cake/vk-requests',
     license='MIT',
     author='Maksim Ekimovskii',
@@ -13,5 +13,11 @@ setup(
         'six',
         'requests==2.8.1',
         'beautifulsoup4==4.4.1'
+    ],
+    classifiers=[
+        'Intended Audience :: Developers'
+
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.4',
     ]
 )
