@@ -7,7 +7,10 @@
 [vk.com](https://vk.com) is the largest social network in Russia.
 This library is significantly improved fork of [vk](https://github.com/dimka665/vk)
 
+## Install
 
+    pip install vk-requests
+    
 ## Usage
     import vk_requests
     
