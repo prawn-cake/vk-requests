@@ -50,4 +50,4 @@ register:
 upload: clean
 # target: upload - Upload package on PyPi
 	@$(VIRTUAL_ENV)/bin/pip install wheel
-	@$(PYTHON) setup.py sdist bdist bdist_wheel upload -r pypi
+	@$(PYTHON) setup.py bdist_wheel upload -r pypi

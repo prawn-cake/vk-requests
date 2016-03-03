@@ -63,7 +63,7 @@ class VKSessionTest(unittest.TestCase):
         self.assertIsInstance(session, VKSession)
 
         # Token is required, cuz auth params are being passed
-        self.assertTrue(session.is_token_required)
+        self.assertTrue(session.auth_api.is_token_required)
 
     def test_custom_auth_api_cls(self):
         class MyAuthAPI(AuthAPI):

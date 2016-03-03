@@ -29,6 +29,11 @@ class API(object):
         return self._timeout
 
     def make_request(self, request_obj):
+        """Make http request. This method is being called from Request object
+
+        :param request_obj: vk_requests.api.Request
+        :return: dict | VkAPIError
+        """
         return self._session.make_request(request_obj)
 
     def __getattr__(self, method_name):
@@ -53,7 +58,7 @@ class Request(object):
         return self._method_args
 
     def __getattr__(self, method_name):
-        return Request(self._api, self._method_name + '.' + method_name)
+        return Request(self._api, '.'.join([self._method_name, method_name]))
 
     def __call__(self, **method_args):
         self._method_args = method_args
