@@ -66,6 +66,13 @@ class BaseAuthAPI(object):
     def api_version(self):
         return self._api_version or self.DEFAULT_API_VERSION
 
+    def is_token_required(self):
+        """Helper method for vk_requests.auth.VKSession initialization
+
+        :return: bool
+        """
+        return any([self.app_id, self._login, self._password])
+
     @property
     def access_token(self):
         if self._access_token is None:
@@ -120,6 +127,7 @@ class AuthAPI(BaseAuthAPI):
         with VerboseHTTPSession() as s:
             self.do_login(session=s)
             url_query_params = self.do_oauth2_authorization(session=s)
+            logger.debug('url_query_params: %s', url_query_params)
 
         if 'access_token' in url_query_params:
             logger.info('Done')
@@ -299,6 +307,9 @@ class InteractiveAuthAPI(AuthAPI):
         if not self.app_id:
             self.app_id = InteractiveAuthAPI.get_app_id()
 
+        # Renew access token, cuz login is set
+        self.renew_access_token()
+
     @staticmethod
     def get_user_login():
         user_login = raw_input('VK user login: ')
@@ -314,7 +325,7 @@ class InteractiveAuthAPI(AuthAPI):
         import getpass
 
         user_password = getpass.getpass('VK user password: ')
-        return user_password
+        return user_password.strip()
 
     def get_access_token(self):
         logger.debug('InteractiveMixin.get_access_token()')
@@ -365,8 +376,6 @@ class VKSession(object):
                                           phone_number=phone_number,
                                           **api_kwargs)
         self.censored_access_token = None
-        # Require token if any of auth parameters are being passed
-        self.is_token_required = any([app_id, user_login, user_password])
 
         # requests.Session subclass instance
         self.http_session = VerboseHTTPSession()
@@ -404,7 +413,7 @@ class VKSession(object):
         logger.debug('access_token = %r', self.censored_access_token)
 
     def make_request(self, request_obj, captcha_response=None):
-        logger.debug('Prepare API Method request')
+        logger.debug('Prepare API Method request %r', request_obj)
         response = self.send_api_request(request=request_obj,
                                          captcha_response=captcha_response)
         response.raise_for_status()
@@ -454,7 +463,7 @@ class VKSession(object):
         for values in (vk_api.get_default_kwargs(), request.get_method_args()):
             method_kwargs.update(stringify_values(values))
 
-        if self.is_token_required:
+        if self.auth_api.is_token_required():
             # Auth api call if access_token weren't be got earlier
             method_kwargs['access_token'] = self.access_token
         if captcha_response:
