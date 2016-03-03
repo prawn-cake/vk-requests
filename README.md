@@ -47,7 +47,7 @@ From your code:
 ### Interactive session. 
 
 Useful for dev purposes. You will be asked about login, password and app_id 
-interactively in console. Useful if capture required.
+interactively in console. Useful if CAPTCHA required.
         
         from vk_requests.api import API
         from vk_requests.auth import InteractiveVKSession
