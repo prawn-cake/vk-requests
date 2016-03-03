@@ -15,7 +15,7 @@ setup(
         'beautifulsoup4==4.4.1'
     ],
     classifiers=[
-        'Intended Audience :: Developers'
+        'Intended Audience :: Developers',
 
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.4',
