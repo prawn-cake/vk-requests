@@ -3,7 +3,7 @@ from vk_requests.auth import InteractiveVKSession, VKSession
 from vk_requests.api import API
 
 
-__version__ = '0.9.3'
+__version__ = '0.9.4'
 
 
 def create_api(app_id=None, login=None, password=None, phone_number=None,

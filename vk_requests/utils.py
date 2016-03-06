@@ -48,6 +48,9 @@ def stringify_values(data):
             items.append(value)
         elif isinstance(value, Iterable):
             for v in value:
+                # Convert to str int values
+                if isinstance(v, int):
+                    v = str(v)
                 try:
                     item = six.u(v)
                 except TypeError:
