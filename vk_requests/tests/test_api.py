@@ -3,7 +3,9 @@ import time
 import unittest
 import six
 import vk_requests
+import mock
 from vk_requests.api import API
+from vk_requests.auth import BaseAuthAPI
 from vk_requests.exceptions import VkAPIError
 from vk_requests.settings import APP_ID, USER_LOGIN, USER_PASSWORD, \
     PHONE_NUMBER
@@ -28,6 +30,35 @@ class VkApiInstanceTest(unittest.TestCase):
     def test_create_api_with_custom_api_version(self):
         api = vk_requests.create_api(api_version='5.00')
         self.assertEqual(api._session.auth_api.api_version, '5.00')
+
+    @mock.patch('vk_requests.utils.VerboseHTTPSession.request')
+    def test_send_request_with_custom_api_version(self, mock_request):
+        """Steps:
+            * Check default api version value per api request
+            * Check custom default api version per api request
+            * Check overriden api version within request
+
+        """
+        # Expect default version to being passed
+        api = vk_requests.create_api()
+        api.users.get(user_id=1)
+        url_data, params = tuple(mock_request.call_args_list[0])
+        self.assertEqual(params['data']['v'], BaseAuthAPI.DEFAULT_API_VERSION)
+        mock_request.reset_mock()
+
+        # Expect predefined version
+        version = '3.00'
+        api = vk_requests.create_api(api_version=version)
+        api.users.get(user_id=1)
+        url_data, params = tuple(mock_request.call_args_list[0])
+        self.assertEqual(params['data']['v'], version)
+        mock_request.reset_mock()
+
+        # Override version in the requests
+        version = '5.8'
+        api.users.get(user_id=1, v=version)
+        url_data, params = tuple(mock_request.call_args_list[0])
+        self.assertEqual(params['data']['v'], version)
 
 
 class VkTestCase(unittest.TestCase):
@@ -77,7 +108,8 @@ class VkTestCase(unittest.TestCase):
         # Create token-based API
         api = self._create_api()
         resp = api.users.search(**request_opts)
-        total_num, items = resp[0], resp[1:]
+        self.assertIsInstance(resp, dict)
+        total_num, items = resp['count'], resp['items']
         self.assertIsInstance(total_num, int)
         for item in items:
             self.assertIsInstance(item, dict)
@@ -87,23 +119,27 @@ class VkTestCase(unittest.TestCase):
         items = self.vk_api.friends.get(
             fields=['nickname', 'city', 'can_see_all_posts'],
             user_id=1)
-        self.assertIsInstance(items, list)
-        for item in items:
+        self.assertIsInstance(items, dict)
+        friends = items['items']
+        for item in friends:
             if 'deactivated' in item:
                 # skip deactivated users, they don't have extra fields
                 continue
             self.assertIsInstance(item, dict)
-            self.assertIn('city', item)
+
+            # User can hide this field
+            # self.assertIn('city', item)
             self.assertIn('nickname', item)
-            self.assertIn('user_id', item)
-            self.assertIn('uid', item)
+            self.assertIn('id', item)
             self.assertIn('can_see_all_posts', item)
 
     @unittest.skip('Custom method test')
     def test_execute(self):
         api = self._create_api()
         resp = api.execute.wallMultiGet(user1=1)
-        print(resp)
+        items = resp[0]
+        for item in items:
+            print(item)
 
     def test_set_status(self):
         """Test requires scope='status' vk permissions
@@ -126,7 +162,8 @@ class VkTestCase(unittest.TestCase):
         self.assertIn('text', resp)
 
         resp = api.messages.get()
-        total_msg, msg_list = resp[0], resp[1:]
+        self.assertIsInstance(resp, dict)
+        total_msg, msg_list = resp['count'], resp['items']
         self.assertIsInstance(total_msg, int)
         for msg in msg_list:
             self.assertIsInstance(msg, dict)
