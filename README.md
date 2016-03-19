@@ -52,7 +52,6 @@ From your code:
 Useful for dev purposes. You will be asked about login, password and app_id 
 interactively in console. Useful if CAPTCHA required.
         
-        from vk_requests.api import API
         from vk_requests.auth import InteractiveVKSession
         
         
@@ -73,7 +72,15 @@ https://vk.com/dev/methods
 
 
 ## Tests
+
+Tests are mostly cheking integration part, so it requires some vk authentication data.
+
+Before running tests locally define environment variables: 
     
+    export VK_USER_LOGIN=<login> VK_USER_PASSWORD=<password> VK_APP_ID=<app_id> VK_PHONE_NUMBER=<phone_number>
+
+To run tests:
+
     tox
 
 
