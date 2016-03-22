@@ -279,7 +279,8 @@ class AuthAPI(BaseAuthAPI):
         if self._phone_number:
             code = self._phone_number[len(phone_prefix):-len(phone_suffix)]
         else:
-            prompt = 'Phone number (%s****%s): ' % (phone_prefix, phone_suffix)
+            prompt = 'Enter missing digits of your phone number (%s****%s): '\
+                        % (phone_prefix, phone_suffix)
             code = raw_input(prompt)
 
         params = parse_url_query_params(form_action_url, fragment=False)
