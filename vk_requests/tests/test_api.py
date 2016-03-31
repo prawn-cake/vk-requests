@@ -167,3 +167,11 @@ class VkTestCase(unittest.TestCase):
         self.assertIsInstance(total_msg, int)
         for msg in msg_list:
             self.assertIsInstance(msg, dict)
+
+    def test_likes_get_list(self):
+        api = self._create_api()
+        resp = api.likes.getList(type='post', owner_id=1, item_id=815649)
+        self.assertIn('count', resp)
+        self.assertIn('items', resp)
+        for user_id in resp['items']:
+            self.assertIsInstance(user_id, int)
