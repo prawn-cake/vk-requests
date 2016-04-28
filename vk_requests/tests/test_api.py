@@ -5,10 +5,11 @@ import six
 import vk_requests
 import mock
 from vk_requests.api import API
-from vk_requests.auth import BaseAuthAPI
-from vk_requests.exceptions import VkAPIError
+from vk_requests.auth import BaseAuthAPI, AuthAPI
+from vk_requests.exceptions import VkAPIError, VkParseError
 from vk_requests.settings import APP_ID, USER_LOGIN, USER_PASSWORD, \
     PHONE_NUMBER
+from vk_requests.utils import VerboseHTTPSession
 
 
 class VkApiInstanceTest(unittest.TestCase):
@@ -175,3 +176,105 @@ class VkTestCase(unittest.TestCase):
         self.assertIn('items', resp)
         for user_id in resp['items']:
             self.assertIsInstance(user_id, int)
+
+
+class AuthAPITest(unittest.TestCase):
+    def setUp(self):
+        self.patch_api = lambda api_method: \
+            mock.patch('vk_requests.auth.AuthAPI.%s' % api_method)
+
+    def test_init(self):
+        auth_api = AuthAPI()
+        self.assertIsInstance(auth_api, AuthAPI)
+
+    def test_init_with_login_param(self):
+        with self.patch_api('renew_access_token') as renew_access_token:
+            auth_api = AuthAPI(user_login='test')
+            self.assertEqual(auth_api._login, 'test')
+            self.assertTrue(renew_access_token.called)
+
+    @staticmethod
+    def get_mocked_session(action=None):
+        """Get mocked session with prepared cookies and text properties
+        """
+        if action is None:
+            action = '/login.php?act=security_check&to=&hash=4b07a450e9f22038b'
+        session = mock.MagicMock(spec=VerboseHTTPSession)
+
+        # Set cookies mock
+        cookies = {'remixsid': 'test'}
+        type(session).cookies = mock.PropertyMock(return_value=cookies)
+
+        # Mock 'text' property on get
+        form = '<form method="post" action="%s"></form>' % action
+        get_response = mock.MagicMock()
+        type(get_response).text = mock.PropertyMock(return_value=form)
+        session.get = mock.Mock(return_value=get_response)
+        return session
+
+    def test_do_login_require_captcha(self):
+        # Prepare mocked parameters
+        auth_api = AuthAPI()
+        session = self.get_mocked_session()
+
+        # Mock 'url' property on post to call require_captcha
+        url = 'http://test/?sid=test123&test=1'
+        post_response = mock.MagicMock()
+        type(post_response).url = mock.PropertyMock(return_value=url)
+        session.post = mock.Mock(return_value=post_response)
+
+        # Do login, expect require captcha method being called
+        with mock.patch('vk_requests.auth.AuthAPI.require_auth_captcha') as \
+                require_captcha:
+            auth_api.do_login(session=session)
+            self.assertTrue(require_captcha.called)
+            call_params = dict(tuple(require_captcha.call_args_list[0])[1])
+            keys = ('query_params', 'form_text', 'login_form_data', 'session')
+            for k in keys:
+                self.assertIn(k, call_params)
+            self.assertEqual(call_params['query_params'],
+                             {'sid': 'test123', 'test': '1'})
+
+    def test_do_login_require_sms_code(self):
+        auth_api = AuthAPI()
+        session = self.get_mocked_session()
+
+        # Mock 'url' property on post to call require_sms_code
+        url = 'http://test/?act=authcheck&test=1'
+        post_response = mock.MagicMock()
+        type(post_response).url = mock.PropertyMock(return_value=url)
+        session.post = mock.Mock(return_value=post_response)
+
+        with self.patch_api('require_sms_code') as require_sms_code:
+            auth_api.do_login(session=session)
+            self.assertTrue(require_sms_code.called)
+            call_params = dict(tuple(require_sms_code.call_args_list[0])[1])
+            keys = ('html', 'session')
+            for k in keys:
+                self.assertIn(k, call_params)
+
+    def test_do_login_require_phone_number(self):
+        auth_api = AuthAPI()
+        session = self.get_mocked_session()
+
+        # Mock 'url' property on post to call require_phone_number
+        url = 'http://test/?act=security_check&test=1'
+        post_response = mock.MagicMock()
+        type(post_response).url = mock.PropertyMock(return_value=url)
+        session.post = mock.Mock(return_value=post_response)
+
+        with self.patch_api('require_phone_number') as require_pn:
+            auth_api.do_login(session=session)
+            self.assertTrue(require_pn.called)
+            call_params = dict(tuple(require_pn.call_args_list[0])[1])
+            keys = ('html', 'session')
+            for k in keys:
+                self.assertIn(k, call_params)
+
+    def test_do_login_no_action_url(self):
+        auth_api = AuthAPI()
+        session = self.get_mocked_session(action='')
+
+        with self.assertRaises(VkParseError) as err:
+            auth_api.do_login(session=session)
+            self.assertIn("Can't parse form action url", str(err))

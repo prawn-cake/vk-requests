@@ -5,7 +5,7 @@ import abc
 
 import six
 
-from vk_requests.exceptions import VkAuthError, VkAPIError
+from vk_requests.exceptions import VkAuthError, VkAPIError, VkParseError
 from vk_requests.utils import parse_url_query_params, VerboseHTTPSession, \
     parse_form_action_url, json_iter_parse, stringify_values, \
     parse_masked_phone_number, check_html_warnings
@@ -28,7 +28,7 @@ class BaseAuthAPI(object):
     def __init__(self, app_id=None, user_login='', user_password='',
                  scope='offline', phone_number=None, api_version=None,
                  **kwargs):
-        logger.debug('Init AuthMixin: %r', self)
+        logger.debug('Init %s: %r', self.__class__.__name__, self)
 
         self.app_id = app_id
         self._login = user_login
@@ -137,16 +137,19 @@ class AuthAPI(BaseAuthAPI):
     def do_login(self, session):
         """Do vk login
 
-        :param session: vk_requests.utils.LoggingSession: http session
+        :param session: vk_requests.utils.VerboseHTTPSession: http session
         """
 
         response = session.get(self.LOGIN_URL)
-        login_form_action = parse_form_action_url(response.text)
-        if not login_form_action:
-            raise VkAuthError('VK changed login flow')
+        action_url = parse_form_action_url(response.text)
+
+        # Stop login it action url is not found
+        if not action_url:
+            logger.debug(response.text)
+            raise VkParseError("Can't parse form action url")
 
         login_form_data = {'email': self._login, 'pass': self._password}
-        response = session.post(login_form_action, login_form_data)
+        response = session.post(action_url, login_form_data)
         logger.debug('Cookies: %s', session.cookies)
 
         response_url_query = parse_url_query_params(
@@ -171,7 +174,6 @@ class AuthAPI(BaseAuthAPI):
         session_cookies = ('remixsid' in session.cookies,
                            'remixsid6' in session.cookies)
         if any(session_cookies):
-            # Session is already established
             logger.info('Session is already established')
             return None
         else:
@@ -199,13 +201,13 @@ class AuthAPI(BaseAuthAPI):
         if 'access_token' in url_query_params:
             return url_query_params
 
-        # Permissions is needed
+        # Permissions are needed
         logger.info('Getting permissions')
-        form_action = parse_form_action_url(response.text)
-        logger.debug('Response form action: %s', form_action)
+        action_url = parse_form_action_url(response.text)
+        logger.debug('Response form action: %s', action_url)
 
-        if form_action:
-            response = session.get(form_action)
+        if action_url:
+            response = session.get(action_url)
             url_query_params = parse_url_query_params(response.url)
             return url_query_params
         try:
@@ -222,14 +224,14 @@ class AuthAPI(BaseAuthAPI):
     def require_sms_code(self, html, session):
         logger.info('User enabled 2 factors authorization. '
                     'Auth check code is needed')
-        auth_check_form_action = parse_form_action_url(html)
+        action_url = parse_form_action_url(html)
         auth_check_code = self.get_sms_code()
         auth_check_data = {
             'code': auth_check_code,
             '_ajax': '1',
             'remember': '1'
         }
-        response = session.post(auth_check_form_action, data=auth_check_data)
+        response = session.post(action_url, data=auth_check_data)
         return response
 
     def require_auth_captcha(self, query_params, form_text, login_form_data,
@@ -246,10 +248,10 @@ class AuthAPI(BaseAuthAPI):
         """
         logger.info('Captcha is needed')
 
-        captcha_form_action = parse_form_action_url(form_text)
-        logger.debug('form_url %s', captcha_form_action)
-        if not captcha_form_action:
-            raise VkAuthError('Cannot find form url')
+        action_url = parse_form_action_url(form_text)
+        logger.debug('form_url %s', action_url)
+        if not action_url:
+            raise VkAuthError('Cannot find form action url')
 
         captcha_url = '%s?s=%s&sid=%s' % (
             self.CAPTCHA_URI, query_params['s'], query_params['sid'])
@@ -258,7 +260,7 @@ class AuthAPI(BaseAuthAPI):
         login_form_data['captcha_sid'] = query_params['sid']
         login_form_data['captcha_key'] = self.get_captcha_key(captcha_url)
 
-        response = session.post(captcha_form_action, login_form_data)
+        response = session.post(action_url, login_form_data)
         return response
 
     def require_phone_number(self, html, session):
@@ -270,8 +272,8 @@ class AuthAPI(BaseAuthAPI):
         # in future it might be propagated to other cases as well
         check_html_warnings(html=html)
 
-        # Determine form action
-        form_action_url = parse_form_action_url(html)
+        # Determine form action url
+        action_url = parse_form_action_url(html)
 
         # Get masked phone from html to make things more clear
         phone_prefix, phone_suffix = parse_masked_phone_number(html)
@@ -283,13 +285,13 @@ class AuthAPI(BaseAuthAPI):
                         % (phone_prefix, phone_suffix)
             code = raw_input(prompt)
 
-        params = parse_url_query_params(form_action_url, fragment=False)
+        params = parse_url_query_params(action_url, fragment=False)
         auth_data = {
             'code': code,
             'act': 'security_check',
             'hash': params['hash']}
         response = session.post(
-            url=self.LOGIN_URL + form_action_url, data=auth_data)
+            url=self.LOGIN_URL + action_url, data=auth_data)
         logger.debug('require_phone_number resp: %s', response.text)
 
     def get_sms_code(self):

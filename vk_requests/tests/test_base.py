@@ -66,9 +66,10 @@ class UtilsTestCase(unittest.TestCase):
 
     def test_parse_form_action(self):
         html = get_fixture('require_phone_num_resp.html')
-        form = utils.parse_form_action_url(html)
+        action_url = utils.parse_form_action_url(html)
         self.assertEqual(
-            form, '/login.php?act=security_check&to=&hash=4b07a4650e9f22038b')
+            action_url,
+            '/login.php?act=security_check&to=&hash=4b07a4650e9f22038b')
 
     def test_parse_masked_phone_number(self):
         html = get_fixture('require_phone_num_resp.html')
