@@ -1,13 +1,14 @@
 # coding=utf8
 
-import six
 import json
-import requests
 import logging
-import bs4
 from collections import Iterable
-from vk_requests.exceptions import VkParseError, VkPageWarningsError
 
+import bs4
+import requests
+import six
+
+from vk_requests.exceptions import VkParseError, VkPageWarningsError
 
 logger = logging.getLogger('vk-requests')
 

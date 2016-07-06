@@ -1,52 +1,10 @@
 # -*- coding: utf-8 -*-
 import unittest
 
-import mock
 import six
 
-from vk_requests import API
-from vk_requests.auth import AuthAPI, InteractiveVKSession, VKSession
-from vk_requests.exceptions import VkPageWarningsError
-from vk_requests.tests.test_base import get_fixture
 from vk_requests import settings
-
-
-class AuthAPITest(unittest.TestCase):
-    def test_require_phone_number(self):
-        """Test require_phone_number with auto resolving security check.
-        Expect that the method will parse given phone number and send
-        confirmation request
-
-        """
-        auth_api = AuthAPI(phone_number='+123456789')
-        html = get_fixture('require_phone_num_resp.html')
-        session_mock = mock.Mock()
-        auth_api.require_phone_number(html=html, session=session_mock)
-        self.assertEqual(session_mock.post.call_count, 1)
-        call = tuple(session_mock.post.call_args_list[0])[1]
-        self.assertEqual(call['data']['act'], 'security_check')
-        self.assertEqual(call['data']['code'], '567')
-
-    def test_require_phone_number_warn(self):
-        """Test require_phone_number with auto resolving security check when vk
-        returns warning message like:
-        'Incorrect numbers. You can repeat the attempt in 3 hours.'
-
-        """
-        auth_api = AuthAPI(phone_number='+123456789')
-        html = get_fixture('require_phone_num_warn_resp.html')
-        session_mock = mock.Mock()
-        with self.assertRaises(VkPageWarningsError) as err:
-            auth_api.require_phone_number(html=html, session=session_mock)
-            self.assertIn(
-                'Incorrect numbers. You can repeat the attempt in 3 hours',
-                str(err))
-
-    @unittest.skip('Require console input')
-    def test_interactive_session_init(self):
-        session = InteractiveVKSession()
-        api = API(session=session, timeout=10)
-        self.assertIsInstance(api, API)
+from vk_requests.auth import AuthAPI, VKSession
 
 
 class VKSessionTest(unittest.TestCase):

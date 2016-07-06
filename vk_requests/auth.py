@@ -1,16 +1,15 @@
 # coding=utf8
 
-import logging
 import abc
+import logging
 
 import six
+from six.moves import input as raw_input
 
 from vk_requests.exceptions import VkAuthError, VkAPIError, VkParseError
 from vk_requests.utils import parse_url_query_params, VerboseHTTPSession, \
     parse_form_action_url, json_iter_parse, stringify_values, \
     parse_masked_phone_number, check_html_warnings
-from six.moves import input as raw_input
-
 
 logger = logging.getLogger('vk-requests')
 
@@ -47,7 +46,7 @@ class BaseAuthAPI(object):
         if self._login:
             self.renew_access_token()
 
-    def __repr__(self):
+    def __repr__(self):  # pragma: no cover
         """This tricky method needs for tox tests. Otherwise it raises an
         AttributeError, haven't dug into this issue
         """
@@ -465,7 +464,7 @@ class VKSession(object):
             url=url, data=method_kwargs, timeout=vk_api.get_timeout())
         return response
 
-    def __repr__(self):
+    def __repr__(self):  # pragma: no cover
         return "%s(api_url='%s', access_token='%s')" % (
             self.__class__.__name__, self.API_URL, self.auth_api._access_token)
 
