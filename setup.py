@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='vk-requests',
-    version='0.9.5',
+    version='0.9.6',
     packages=['vk_requests'],
     url='https://github.com/prawn-cake/vk-requests',
     license='MIT',
