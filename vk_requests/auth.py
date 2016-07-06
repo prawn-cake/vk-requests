@@ -1,16 +1,15 @@
 # coding=utf8
 
-import logging
 import abc
+import logging
 
 import six
+from six.moves import input as raw_input
 
 from vk_requests.exceptions import VkAuthError, VkAPIError, VkParseError
 from vk_requests.utils import parse_url_query_params, VerboseHTTPSession, \
     parse_form_action_url, json_iter_parse, stringify_values, \
     parse_masked_phone_number, check_html_warnings
-from six.moves import input as raw_input
-
 
 logger = logging.getLogger('vk-requests')
 

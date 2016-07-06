@@ -1,7 +1,6 @@
 # coding=utf8
 
 import logging
-import logging.config
 
 
 logging.basicConfig(
