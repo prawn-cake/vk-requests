@@ -63,7 +63,7 @@ class Request(object):
         self._method_args = method_args
         return self._api.make_request(request_obj=self)
 
-    def __repr__(self):
+    def __repr__(self):  # pragma: no cover
         return "%s(method='%s', args=%s)" % (
             self.__class__.__name__, self.get_method_name(),
             self.get_method_args())
