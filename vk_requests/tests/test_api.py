@@ -81,10 +81,8 @@ class VkTestCase(unittest.TestCase):
         )
 
     def test_get_server_time(self):
-        time_1 = time.time() - 1
-        time_2 = time_1 + 10
         server_time = self.vk_api.getServerTime()
-        self.assertTrue(time_1 <= server_time <= time_2)
+        self.assertTrue(int(server_time))
 
     def test_get_server_time_via_token_api(self):
         time_1 = time.time() - 1
