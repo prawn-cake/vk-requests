@@ -35,7 +35,7 @@ From your code:
 
 
 ## Features
-### "Queryset-like" requests
+### Straightforward queries
     
     # Returns list of users
     api.users.get(users_ids=1)
@@ -47,18 +47,28 @@ From your code:
     api.execute.YourMethod(**method_params)
  
  
-### Interactive session. 
+### Interactive session
 
-Useful for dev purposes. You will be asked about login, password and app_id 
-interactively in console. Useful if CAPTCHA required.
-        
-        from vk_requests.auth import InteractiveVKSession
-        
-        
-        api = vk_requests.create_api(..., session_cls=InteractiveVKSession)
+Interactive session gives you control over login parameters during the runtime. 
+
+**Useful if**
+
+* 2FA authentication required
+* CAPTCHA required
+* For testing purposes
+
+#### Usage
+
+    api = vk_requests.create_api(..., interactive=True)
+
+If you don't pass login, password and app_id you will be asked to prompt it, i.e having this
+
+    api = vk_requests.create_api(app_id=XXX, login='***', password='***', interactive=True)
+
+You will be asked only for *2FA authentication* or *captcha* code if required 
 
 
-### Auto-resolving conflicts when you getting access from unusual place
+### Auto-resolving conflicts when you're getting access from unusual place
 
 Just pass your phone number during API initialization. In case of security check 
 it will be handled automatically, otherwise console input will be asked
@@ -73,7 +83,7 @@ https://vk.com/dev/methods
 
 ## Tests
 
-Tests are mostly cheking integration part, so it requires some vk authentication data.
+Tests are mostly checking integration part, so it requires some vk authentication data.
 
 Before running tests locally define environment variables: 
     

@@ -7,7 +7,8 @@ import six
 
 import vk_requests
 from vk_requests.api import API
-from vk_requests.auth import BaseAuthAPI, AuthAPI, InteractiveVKSession
+from vk_requests.auth import BaseAuthAPI, AuthAPI, InteractiveVKSession, \
+    InteractiveAuthAPI
 from vk_requests.exceptions import VkAPIError, VkParseError, \
     VkPageWarningsError
 from vk_requests.settings import APP_ID, USER_LOGIN, USER_PASSWORD, \
@@ -41,7 +42,7 @@ class VkApiInstanceTest(unittest.TestCase):
         """Steps:
             * Check default api version value per api request
             * Check custom default api version per api request
-            * Check overriden api version within request
+            * Check overridden api version within request
 
         """
         # Expect default version to being passed
@@ -195,15 +196,24 @@ class AuthAPITest(unittest.TestCase):
         with self.patch_api('renew_access_token') as renew_access_token:
             auth_api = AuthAPI(user_login='test')
             self.assertEqual(auth_api._login, 'test')
-            self.assertTrue(renew_access_token.called)
+            self.assertEqual(renew_access_token.call_count, 1)
+
+    def test_check_interactive_api_renew_token_is_called_once(self):
+        with self.patch_api('renew_access_token') as renew_access_token:
+            # Fill user, password and app_id to init without prompt
+            auth_api = InteractiveAuthAPI(user_login='test',
+                                          user_password='test',
+                                          app_id=1234)
+            self.assertIsInstance(auth_api, InteractiveAuthAPI)
+            self.assertEqual(renew_access_token.call_count, 1)
 
     @staticmethod
-    def get_mocked_session(action=None):
+    def get_mocked_session(name='session', action=None):
         """Get mocked session with prepared cookies and text properties
         """
         if action is None:
             action = '/login.php?act=security_check&to=&hash=4b07a450e9f22038b'
-        session = mock.MagicMock(spec=VerboseHTTPSession)
+        session = mock.MagicMock(name=name, spec=VerboseHTTPSession)
 
         # Set cookies mock
         cookies = {'remixsid': 'test'}
@@ -239,23 +249,31 @@ class AuthAPITest(unittest.TestCase):
             self.assertEqual(call_params['query_params'],
                              {'sid': 'test123', 'test': '1'})
 
-    def test_do_login_require_sms_code(self):
+    def test_do_login_require_2fa(self):
         auth_api = AuthAPI()
-        session = self.get_mocked_session()
+        session = self.get_mocked_session(name='2fa_session')
 
-        # Mock 'url' property on post to call require_sms_code
+        # Mock 'url' property on post to call get_2fa_code
         url = 'http://test/?act=authcheck&test=1'
-        post_response = mock.MagicMock()
-        type(post_response).url = mock.PropertyMock(return_value=url)
-        session.post = mock.Mock(return_value=post_response)
+        login_response = mock.MagicMock(name='login_response')
+        form = '<form method="post" action="/login?act=authcheck_code' \
+               '&hash=1234567890_ff181e72e9db30cbc3"></form>'
+        type(login_response).url = mock.PropertyMock(return_value=url)
+        type(login_response).text = mock.PropertyMock(return_value=form)
+        session.post = mock.Mock(return_value=login_response)
 
-        with self.patch_api('require_sms_code') as require_sms_code:
+        with self.patch_api('get_2fa_code') as get_2fa_code:
+            get_2fa_code.return_value = 1234
             auth_api.do_login(session=session)
-            self.assertTrue(require_sms_code.called)
-            call_params = dict(tuple(require_sms_code.call_args_list[0])[1])
-            keys = ('html', 'session')
-            for k in keys:
-                self.assertIn(k, call_params)
+            self.assertTrue(get_2fa_code.called)
+            call_2fa = dict(tuple(session.post.call_args_list[-1])[1])
+
+            # Check that 2fa http call was done with correct url and data
+            self.assertEqual(call_2fa['url'],
+                             'https://m.vk.com/login?act=authcheck_code&'
+                             'hash=1234567890_ff181e72e9db30cbc3')
+            self.assertEqual(call_2fa['data'],
+                             {'_ajax': '1', 'code': 1234, 'remember': '1'})
 
     def test_do_login_require_phone_number(self):
         auth_api = AuthAPI()

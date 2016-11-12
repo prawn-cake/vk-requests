@@ -141,11 +141,16 @@ def check_html_warnings(html, parser=None):
 class VerboseHTTPSession(requests.Session):
     """HTTP session based on requests.Session with some extra logging
     """
+    def __init__(self):
+        super(VerboseHTTPSession, self).__init__()
+        self.logger = logging.getLogger(self.__class__.__name__)
 
     def request(self, method, url, **kwargs):
-        logger.debug('Request: %s %s, params=%r, data=%r',
-                     method, url, kwargs.get('params'), kwargs.get('data'))
+        self.logger.debug(
+            'Request: %s %s, params=%r, data=%r',
+            method, url, kwargs.get('params'), kwargs.get('data'))
         response = super(VerboseHTTPSession, self).request(
             method, url, **kwargs)
-        logger.debug('Response: %s %s', response.status_code, response.url)
+        self.logger.debug(
+            'Response: %s %s', response.status_code, response.url)
         return response
