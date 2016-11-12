@@ -84,12 +84,6 @@ class VkTestCase(unittest.TestCase):
         server_time = self.vk_api.getServerTime()
         self.assertTrue(int(server_time))
 
-    def test_get_server_time_via_token_api(self):
-        time_1 = time.time() - 1
-        time_2 = time_1 + 20
-        server_time = self.vk_api.getServerTime()
-        self.assertTrue(time_1 <= server_time <= time_2)
-
     def test_get_profiles_via_token(self):
         profiles = self.vk_api.users.get(user_id=1)
         self.assertEqual(profiles[0]['last_name'], u'Дуров')

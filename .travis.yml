@@ -4,6 +4,7 @@ python:
 env:
   - TOXENV=py27
   - TOXENV=py34
+  - TOXENV=py35
 install:
   - pip install -r requirements.txt
   - pip install tox coveralls
