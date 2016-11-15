@@ -477,4 +477,6 @@ class VKSession(object):
 
 
 class InteractiveVKSession(VKSession):
+    # TODO: get rid of InteractiveVKSession at all,
+    # just use VKSession with different api classes
     DEFAULT_AUTH_API_CLS = InteractiveAuthAPI
