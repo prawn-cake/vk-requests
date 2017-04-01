@@ -1,8 +1,12 @@
 Changelog
 =========
 
-0.9.7 (2016-11-15)
+0.9.7+1 (UNRELEASED)
 --------------------
+
+
+0.9.7 (2016-11-15)
+------------------
 * [Bugfix] #14: 2FA authentication fix
 * [Improvement] Deprecate session_cls in the create_api(...) factory method, use interactive=True flag instead
 

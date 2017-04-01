@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 # API Error Codes
 AUTHORIZATION_FAILED = 5        # Invalid access token
