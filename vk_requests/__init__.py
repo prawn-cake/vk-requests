@@ -1,5 +1,4 @@
-import warnings
-
+# -*- coding: utf-8 -*-
 from vk_requests.auth import InteractiveVKSession, VKSession
 from vk_requests.api import API
 
@@ -9,8 +8,7 @@ __version__ = '0.9.7'
 
 def create_api(app_id=None, login=None, password=None, phone_number=None,
                timeout=10, scope='offline', api_version=None,
-               interactive=False, session_cls=VKSession,
-               **method_default_args):
+               interactive=False, **method_default_args):
     """Factory method to explicitly create API with app_id, login, password
     and phone_number parameters.
 
@@ -23,18 +21,12 @@ def create_api(app_id=None, login=None, password=None, phone_number=None,
     :param phone_number: str: phone number with country code (+71234568990)
     :param timeout: int: api timeout in seconds
     :param scope: str or list of str: vk session scope
-    :param api_version: str: vk api version
+    :param api_version: str: vk api version, check https://vk.com/dev/versions
     :param interactive: bool: flag which indicates to use InteractiveVKSession
-    :param session_cls: DEPRECATED: VKSession: session implementation class.
-                        Use interactive flag instead
     :param method_default_args: api kwargs
     :return: api instance
     :rtype : vk_requests.api.API
     """
-    if isinstance(session_cls, InteractiveVKSession):
-        warnings.warn('session_cls is deprecated, '
-                      'use interactive flag instead', DeprecationWarning)
-        interactive = True
 
     session_cls = InteractiveVKSession if interactive else VKSession
     session = session_cls(app_id=app_id,

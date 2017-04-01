@@ -1,5 +1,5 @@
-# coding=utf8
-
+# -*- coding: utf-8 -*-
+import functools
 import json
 import logging
 from collections import Iterable
@@ -154,3 +154,21 @@ class VerboseHTTPSession(requests.Session):
         self.logger.debug(
             'Response: %s %s', response.status_code, response.url)
         return response
+
+
+def partialclass(cls, *args, **kwargs):
+    """partial function equivalent for creating similar classes with 
+    pre-defined constructor arguments
+    
+    NOTE: py3.4+ only
+
+    :param cls: origin class
+    :param args: partial init args
+    :param kwargs: partial init kwargs
+    :return: new class
+    """
+
+    class NewCls(cls):
+        __init__ = functools.partialmethod(cls.__init__, *args, **kwargs)
+
+    return NewCls
