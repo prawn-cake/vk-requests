@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from vk_requests.auth import InteractiveVKSession, VKSession
+from vk_requests.auth import VKSession, InteractiveAuthAPI
 from vk_requests.api import API
 
 
@@ -28,11 +28,11 @@ def create_api(app_id=None, login=None, password=None, phone_number=None,
     :rtype : vk_requests.api.API
     """
 
-    session_cls = InteractiveVKSession if interactive else VKSession
-    session = session_cls(app_id=app_id,
-                          user_login=login,
-                          user_password=password,
-                          phone_number=phone_number,
-                          scope=scope,
-                          api_version=api_version)
+    session = VKSession(app_id=app_id,
+                        user_login=login,
+                        user_password=password,
+                        phone_number=phone_number,
+                        scope=scope,
+                        api_version=api_version,
+                        auth_api_cls=InteractiveAuthAPI if interactive else None)
     return API(session=session, timeout=timeout, **method_default_args)

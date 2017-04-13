@@ -474,9 +474,3 @@ class VKSession(object):
     def __repr__(self):  # pragma: no cover
         return "%s(api_url='%s', access_token='%s')" % (
             self.__class__.__name__, self.API_URL, self.auth_api._access_token)
-
-
-class InteractiveVKSession(VKSession):
-    # TODO: get rid of InteractiveVKSession at all,
-    # just use VKSession with different api classes
-    DEFAULT_AUTH_API_CLS = InteractiveAuthAPI

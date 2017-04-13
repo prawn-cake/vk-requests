@@ -7,8 +7,7 @@ import six
 
 import vk_requests
 from vk_requests.api import API
-from vk_requests.auth import BaseAuthAPI, AuthAPI, InteractiveVKSession, \
-    InteractiveAuthAPI
+from vk_requests.auth import BaseAuthAPI, AuthAPI, InteractiveAuthAPI
 from vk_requests.exceptions import VkAPIError, VkParseError, \
     VkPageWarningsError
 from vk_requests.settings import APP_ID, USER_LOGIN, USER_PASSWORD, \
@@ -314,12 +313,6 @@ class AuthAPITest(unittest.TestCase):
             self.assertIn(
                 'Incorrect numbers. You can repeat the attempt in 3 hours',
                 str(err))
-
-    @unittest.skip('Require console input')
-    def test_interactive_session_init(self):
-        session = InteractiveVKSession()
-        api = API(session=session, timeout=10)
-        self.assertIsInstance(api, API)
 
     def test_do_login_no_action_url(self):
         auth_api = AuthAPI()
