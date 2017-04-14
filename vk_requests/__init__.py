@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from vk_requests.auth import VKSession, InteractiveAuthAPI
+from vk_requests.session import VKSession
 from vk_requests.api import API
 
 
@@ -34,5 +34,5 @@ def create_api(app_id=None, login=None, password=None, phone_number=None,
                         phone_number=phone_number,
                         scope=scope,
                         api_version=api_version,
-                        auth_api_cls=InteractiveAuthAPI if interactive else None)
+                        interactive=interactive)
     return API(session=session, timeout=timeout, **method_default_args)

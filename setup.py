@@ -12,7 +12,8 @@ setup(
     install_requires=[
         'six',
         'requests>=2.8.1',
-        'beautifulsoup4>=4.4.1'
+        'beautifulsoup4>=4.4.1',
+        'aiohttp'
     ],
     classifiers=[
         'Intended Audience :: Developers',

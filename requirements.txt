@@ -1,3 +1,4 @@
 requests        >= 2.8.1
 six
 beautifulsoup4  >= 4.4.1
+aiohttp
