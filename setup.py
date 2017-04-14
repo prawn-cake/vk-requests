@@ -5,9 +5,10 @@ import sys
 
 PY_VERSION = sys.version_info.major, sys.version_info.minor
 
-install_requires = ['six',
-        'requests>=2.8.1',
-        'beautifulsoup4>=4.4.1']
+install_requires = [
+    'six',
+    'requests>=2.8.1',
+    'beautifulsoup4>=4.4.1']
 
 
 if PY_VERSION >= (3, 4):
