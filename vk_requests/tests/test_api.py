@@ -89,7 +89,7 @@ class VkApiMethodsLiveTest(unittest.TestCase):
 
     def test_get_profiles_via_token(self):
         profiles = self.vk_api.users.get(user_id=1)
-        self.assertEqual(profiles[0]['last_name'], u'Дуров')
+        self.assertIn(profiles[0]['last_name'], ('Durov', 'Дуров'))
 
     def test_users_search(self):
         request_opts = dict(
@@ -138,8 +138,9 @@ class VkApiMethodsLiveTest(unittest.TestCase):
     def test_execute(self):
         api = self._create_api()
         resp = api.execute.wallMultiGet(user1=1)
-        items = resp[0]
-        for item in items:
+        posts = resp[0]
+        for item in posts:
+            self.assertIsInstance(item, dict)
             print(item)
 
     def test_set_status(self):

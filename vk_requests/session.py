@@ -37,7 +37,7 @@ class VKSession(object):
         self.app_id = app_id
         self._login = user_login
         self._password = user_password
-        self._kwargs = api_kwargs
+        self._api_kwargs = api_kwargs
         self._phone_number = phone_number
         self.scope = scope
         self.interactive = interactive
@@ -107,7 +107,8 @@ class VKSession(object):
                 http_session=http_session)
 
         elif act == 'authcheck':
-            self.require_2fa(html=login_response.text, http_session=http_session)
+            self.require_2fa(html=login_response.text,
+                             http_session=http_session)
 
         elif act == 'security_check':
             self.require_phone_number(html=login_response.text,
@@ -191,7 +192,7 @@ class VKSession(object):
         :param http_session: requests.Session
         :return: :raise VkAuthError:
         """
-        logger.info('Captcha is needed')
+        logger.info('Captcha is needed: %s', query_params)
 
         action_url = parse_form_action_url(form_text)
         logger.debug('form_url %s', action_url)
@@ -255,18 +256,15 @@ class VKSession(object):
             self._access_token = self._get_access_token()
         return self._access_token
 
-    @access_token.setter
-    def access_token(self, value):
-        self._access_token = value
-
     def _get_access_token(self):
-        """Get access token using app id and user login and password.
+        """Get access token using app_id, login and password.
         """
 
         if not all([self.app_id, self._login, self._password]):
             raise ValueError(
-                'app_id=%s, login=%s password=%s (masked) must be given' % (
-                    self.app_id, self._login, bool(self._password)))
+                'app_id=%s, login=%s password=%s (masked) must be given'
+                % (self.app_id, self._login,
+                   '*' * len(self._password) if self._password else 'None'))
 
         logger.info("Getting access token for user '%s'" % self._login)
         with VerboseHTTPSession() as s:
@@ -308,7 +306,7 @@ class VKSession(object):
         :return: 
         """
         logger.debug('Prepare API Method request %r', request_obj)
-        response = self.send_api_request(request=request_obj,
+        response = self.send_api_request(request_obj=request_obj,
                                          captcha_response=captcha_response)
         response.raise_for_status()
         response_or_error = json.loads(response.text)
@@ -344,19 +342,18 @@ class VKSession(object):
         elif 'response' in response_or_error:
             return response_or_error['response']
 
-    def send_api_request(self, request, captcha_response=None):
+    def send_api_request(self, request_obj, captcha_response=None):
         """Prepare and send HTTP API request
 
-        :param request:: vk_requests.api.Request instance 
+        :param request_obj: vk_requests.api.Request instance 
         :param captcha_response: None or dict 
         :return: HTTP response
         """
-        url = self.API_URL + request.get_method_name()
-        vk_api = request.get_api()
+        url = self.API_URL + request_obj.method_name
 
         # Prepare request arguments
         method_kwargs = {'v': self.api_version}
-        for values in (vk_api.get_default_kwargs(), request.get_method_args()):
+        for values in (request_obj.method_args, ):
             method_kwargs.update(stringify_values(values))
 
         if self.is_token_required():
@@ -367,7 +364,7 @@ class VKSession(object):
             method_kwargs['captcha_key'] = captcha_response['key']
 
         response = self.http_session.post(
-            url=url, data=method_kwargs, timeout=vk_api.get_timeout())
+            url=url, data=method_kwargs, timeout=request_obj.timeout)
         return response
 
     def __repr__(self):  # pragma: no cover

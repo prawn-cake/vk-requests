@@ -39,11 +39,6 @@ class VKSessionTest(unittest.TestCase):
         self.assertTrue(session.access_token)
         self.assertIsInstance(session.access_token, six.string_types)
 
-        # Check token setter
-        new_token_value = 'my_fake_access_token'
-        session.access_token = new_token_value
-        self.assertEqual(session.access_token, new_token_value)
-
     def test_init_with_login_param(self):
         with self.patch_api('renew_access_token') as renew_access_token:
             vk_session = VKSession(user_login='test')
