@@ -336,7 +336,7 @@ class VKSession(object):
             elif vk_error.is_access_token_incorrect():
                 logger.info(
                     'Authorization failed. Access token will be dropped')
-                self.access_token = None
+                self._access_token = None
                 return self.make_request(request_obj)
 
             else:
