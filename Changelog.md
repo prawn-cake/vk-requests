@@ -3,7 +3,7 @@ Changelog
 
 0.9.8+1 (UNRELEASED)
 --------------------
-
+* [Bugfix] #25: Fix logging issues
 
 0.9.8 (2017-04-01)
 ------------------
