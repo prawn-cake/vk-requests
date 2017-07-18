@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.9.8+1 (UNRELEASED)
+0.9.9 (2017-07-18)
 --------------------
 * [Bugfix] #25: Fix logging issues
 
