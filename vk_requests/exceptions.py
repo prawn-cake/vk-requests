@@ -60,7 +60,7 @@ class VkAPIError(VkException):
         return self.error_data.get('captcha_sid')
 
     @property
-    def captcha_img(self):
+    def captcha_img_url(self):
         return self.error_data.get('captcha_img')
 
     def __str__(self):

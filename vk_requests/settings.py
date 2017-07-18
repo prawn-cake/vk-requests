@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
+"""Test settings"""
 
-# Test settings
 import os
 
 # Set your environment variables for testing or put values here

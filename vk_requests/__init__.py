@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from vk_requests.auth import InteractiveVKSession, VKSession
+from vk_requests.session import VKSession
 from vk_requests.api import API
 
 
-__version__ = '0.9.8'
+__version__ = '0.9.9'
 
 
 def create_api(app_id=None, login=None, password=None, phone_number=None,
@@ -28,11 +28,24 @@ def create_api(app_id=None, login=None, password=None, phone_number=None,
     :rtype : vk_requests.api.API
     """
 
-    session_cls = InteractiveVKSession if interactive else VKSession
-    session = session_cls(app_id=app_id,
-                          user_login=login,
-                          user_password=password,
-                          phone_number=phone_number,
-                          scope=scope,
-                          api_version=api_version)
+    session = VKSession(app_id=app_id,
+                        user_login=login,
+                        user_password=password,
+                        phone_number=phone_number,
+                        scope=scope,
+                        api_version=api_version,
+                        interactive=interactive)
     return API(session=session, timeout=timeout, **method_default_args)
+
+
+# Set default logging handler to avoid "No handler found" warnings.
+import logging
+
+try:  # Python 2.7+
+    from logging import NullHandler
+except ImportError:
+    class NullHandler(logging.Handler):
+        def emit(self, record):
+            pass
+
+logging.getLogger('vk-requests').addHandler(NullHandler())

@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import functools
-import json
 import logging
 from collections import Iterable
 
@@ -19,14 +17,6 @@ try:
 except ImportError:
     # Python 3
     from urllib.parse import urlparse, parse_qsl, urlencode
-
-
-def json_iter_parse(response_text):
-    decoder = json.JSONDecoder(strict=False)
-    idx = 0
-    while idx < len(response_text):
-        obj, idx = decoder.raw_decode(response_text, idx)
-        yield obj
 
 
 def stringify_values(data):
@@ -154,21 +144,3 @@ class VerboseHTTPSession(requests.Session):
         self.logger.debug(
             'Response: %s %s', response.status_code, response.url)
         return response
-
-
-def partialclass(cls, *args, **kwargs):
-    """partial function equivalent for creating similar classes with 
-    pre-defined constructor arguments
-    
-    NOTE: py3.4+ only
-
-    :param cls: origin class
-    :param args: partial init args
-    :param kwargs: partial init kwargs
-    :return: new class
-    """
-
-    class NewCls(cls):
-        __init__ = functools.partialmethod(cls.__init__, *args, **kwargs)
-
-    return NewCls

@@ -1,8 +1,12 @@
 Changelog
 =========
 
-0.9.8 (2017-04-01)
+0.9.8+1 (UNRELEASED)
 --------------------
+* [Bugfix] #25: Fix logging issues
+
+0.9.8 (2017-04-01)
+------------------
 * Remove deprecated code
 
 0.9.7 (2016-11-15)

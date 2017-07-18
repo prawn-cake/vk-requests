@@ -26,16 +26,25 @@ Just pass `scope` and/or `api_version` parameters like
     api = vk_requests.create_api(..., scope=['offline', 'status'], api_version='5.00')
     api.status.set(text='Hello world!')
     
-### Enable debug logger
-From your code:
+### Enable logging
+
+To enable library logging in your project you should do as follows:
     
     import logging
     
+    # Setup basic config
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s %(levelname)s [%(name)s] %(message)s',
+    )
+    
+    # To change log level for the library logger
     logging.getLogger('vk-requests').setLevel(logging.DEBUG)
 
 
 ## Features
-### Straightforward queries
+
+### Simple queries
     
     # Returns list of users
     api.users.get(users_ids=1)
