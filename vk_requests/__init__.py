@@ -36,3 +36,16 @@ def create_api(app_id=None, login=None, password=None, phone_number=None,
                         api_version=api_version,
                         interactive=interactive)
     return API(session=session, timeout=timeout, **method_default_args)
+
+
+# Set default logging handler to avoid "No handler found" warnings.
+import logging
+
+try:  # Python 2.7+
+    from logging import NullHandler
+except ImportError:
+    class NullHandler(logging.Handler):
+        def emit(self, record):
+            pass
+
+logging.getLogger('vk-requests').addHandler(NullHandler())

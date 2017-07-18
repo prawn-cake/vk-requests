@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import functools
-import json
 import logging
 from collections import Iterable
 
