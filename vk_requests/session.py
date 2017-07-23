@@ -32,13 +32,16 @@ class VKSession(object):
 
     def __init__(self, app_id=None, user_login=None, user_password=None,
                  phone_number=None, scope='offline', api_version=None,
-                 interactive=False, **api_kwargs):
+                 interactive=False, service_token=None):
+        """IMPORTANT: (app_id + user_login + user_password) and service_token
+        are mutually exclusive
 
+        """
         self.app_id = app_id
         self._login = user_login
         self._password = user_password
-        self._api_kwargs = api_kwargs
         self._phone_number = phone_number
+        self._service_token = service_token
         self.scope = scope
         self.interactive = interactive
         self._access_token = None
@@ -263,8 +266,14 @@ class VKSession(object):
         return self._access_token
 
     def _get_access_token(self):
-        """Get access token using app_id, login and password.
+        """Get access token using app_id, login and password OR service token
+        (service token docs: https://vk.com/dev/service_token
         """
+        if self._service_token:
+            # len(self._service_token) == 70
+            logger.info('Use service token: %s',
+                        5 * '*' + self._service_token[50:])
+            return self._service_token
 
         if not all([self.app_id, self._login, self._password]):
             raise ValueError(
@@ -309,7 +318,7 @@ class VKSession(object):
 
         :param request_obj: vk_requests.api.Request instance
         :param captcha_response: None or dict, e.g {'sid': <sid>, 'key': <key>}
-        :return: 
+        :return: dict: json decoded http response
         """
         logger.debug('Prepare API Method request %r', request_obj)
         response = self.send_api_request(request_obj=request_obj,
@@ -359,6 +368,7 @@ class VKSession(object):
 
         # Prepare request arguments
         method_kwargs = {'v': self.api_version}
+
         for values in (request_obj.method_args, ):
             method_kwargs.update(stringify_values(values))
 
@@ -369,8 +379,10 @@ class VKSession(object):
             method_kwargs['captcha_sid'] = captcha_response['sid']
             method_kwargs['captcha_key'] = captcha_response['key']
 
-        response = self.http_session.post(
-            url=url, data=method_kwargs, timeout=request_obj.timeout)
+        http_params = dict(url=url,
+                           data=method_kwargs,
+                           **request_obj.http_params)
+        response = self.http_session.post(**http_params)
         return response
 
     def __repr__(self):  # pragma: no cover
