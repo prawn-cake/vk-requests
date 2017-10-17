@@ -22,7 +22,7 @@ clean:
 .PHONY: env
 env:
 # target: env - create virtualenv and install packages
-	@virtualenv $(VIRTUAL_ENV)
+	@virtualenv --python=python3 $(VIRTUAL_ENV)
 	@$(VIRTUAL_ENV)/bin/pip install -r $(CURDIR)/requirements-test.txt
 
 

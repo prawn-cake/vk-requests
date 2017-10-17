@@ -8,7 +8,7 @@ from vk_requests.api import API
 from vk_requests.exceptions import VkAPIError
 from vk_requests import VKSession
 from vk_requests.settings import APP_ID, USER_LOGIN, USER_PASSWORD, \
-    PHONE_NUMBER
+    PHONE_NUMBER, SERVICE_TOKEN
 
 try:
     from unittest import mock
@@ -146,7 +146,7 @@ class VkApiMethodsLiveTest(unittest.TestCase):
     def test_set_status(self):
         """Test requires scope='status' vk permissions
         """
-        status_text = 'Welcome to noagent.168.estate'
+        status_text = 'Welcome to noagent.estate'
         api = self._create_api(scope=['offline', 'status'])
         self.assertEqual(api._session.scope, ['offline', 'status'])
 

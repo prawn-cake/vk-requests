@@ -2,16 +2,24 @@
 ========================================================================================================
 [![Build Status](https://travis-ci.org/prawn-cake/vk-requests.svg?branch=master)](https://travis-ci.org/prawn-cake/vk-requests)
 [![Coverage Status](https://coveralls.io/repos/prawn-cake/vk-requests/badge.svg?branch=master&service=github)](https://coveralls.io/github/prawn-cake/vk-requests?branch=master)
-![PythonVersions](https://www.dropbox.com/s/ck0nc28ttga2pw9/python-2.7_3.4-blue.svg?dl=1)
+[![GitHub issues](https://img.shields.io/github/issues/prawn-cake/vk-requests.svg)](https://github.com/prawn-cake/vk-requests/issues)
 
 [vk.com](https://vk.com) is the largest social network in Russia.
 This library is significantly improved fork of [vk](https://github.com/dimka665/vk)
+
+## Requirements
+
+* python (2.7, 3.4, 3.5, 3.6)
+
 
 ## Install
 
     pip install vk-requests
     
 ## Usage
+
+#### Using user token
+
     import vk_requests
     
     
@@ -19,6 +27,16 @@ This library is significantly improved fork of [vk](https://github.com/dimka665/
     api.users.get(user_ids=1)
     [{'first_name': 'Pavel', 'last_name': 'Durov', 'id': 1}]
     
+#### Using service token
+
+    api = vk_requests.create_api(service_token="{YOUR_APP_SERVICE_TOKEN}")
+    ...
+    
+**NOTE:** service token is preferable way, because it does not require user 
+credentials and oauth requests, but not all methods can be called with service token (e.g *execute* can't be)
+
+More info about service token: [Link](https://vk.com/dev/service_token) 
+   
 ### Custom scope or api version requests
 
 Just pass `scope` and/or `api_version` parameters like
