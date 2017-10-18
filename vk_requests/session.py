@@ -32,13 +32,16 @@ class VKSession(object):
 
     def __init__(self, app_id=None, user_login=None, user_password=None,
                  phone_number=None, scope='offline', api_version=None,
-                 interactive=False, **api_kwargs):
+                 interactive=False, service_token=None):
+        """IMPORTANT: (app_id + user_login + user_password) and service_token
+        are mutually exclusive
 
+        """
         self.app_id = app_id
         self._login = user_login
         self._password = user_password
-        self._api_kwargs = api_kwargs
         self._phone_number = phone_number
+        self._service_token = service_token
         self.scope = scope
         self.interactive = interactive
         self._access_token = None
@@ -117,8 +120,8 @@ class VKSession(object):
         session_cookies = ('remixsid' in http_session.cookies,
                            'remixsid6' in http_session.cookies)
         if any(session_cookies):
-            logger.info('Session is already established')
-            return None
+            logger.info('VK session is established')
+            return True
         else:
             message = 'Authorization error: incorrect password or ' \
                       'authentication code'
@@ -126,9 +129,10 @@ class VKSession(object):
             raise VkAuthError(message)
 
     def do_oauth2_authorization(self, session):
-        """ OAuth2. More info: https://vk.com/dev/auth_mobile
+        """ OAuth2 authorization method. It's used for getting access token
+        More info: https://vk.com/dev/auth_mobile
         """
-        logger.info('Doing oauth2')
+        logger.info('Doing oauth2, app_id=%s', self.app_id)
         auth_data = {
             'client_id': self.app_id,
             'display': 'mobile',
@@ -215,7 +219,7 @@ class VKSession(object):
 
         # Raises VkPageWarningsError in case of warnings
         # NOTE: we check only 'security_check' case on warnings for now
-        # in future it might be propagated to other cases as well
+        # in future it might be extended for other cases as well
         check_html_warnings(html=html)
 
         # Determine form action url
@@ -227,9 +231,14 @@ class VKSession(object):
         if self._phone_number:
             code = self._phone_number[len(phone_prefix):-len(phone_suffix)]
         else:
-            prompt = 'Enter missing digits of your phone number (%s****%s): '\
-                        % (phone_prefix, phone_suffix)
-            code = raw_input(prompt)
+            if self.interactive:
+                prompt = 'Enter missing digits of your phone number (%s****%s): '\
+                            % (phone_prefix, phone_suffix)
+                code = raw_input(prompt)
+            else:
+                raise VkAuthError(
+                    'Phone number is required. Create an API instance using '
+                    'phone_number parameter or use interactive mode')
 
         params = parse_url_query_params(action_url, fragment=False)
         auth_data = {
@@ -257,8 +266,13 @@ class VKSession(object):
         return self._access_token
 
     def _get_access_token(self):
-        """Get access token using app_id, login and password.
+        """Get access token using app_id, login and password OR service token
+        (service token docs: https://vk.com/dev/service_token
         """
+        if self._service_token:
+            logger.info('Use service token: %s',
+                        5 * '*' + self._service_token[50:])
+            return self._service_token
 
         if not all([self.app_id, self._login, self._password]):
             raise ValueError(
@@ -267,13 +281,13 @@ class VKSession(object):
                    '*' * len(self._password) if self._password else 'None'))
 
         logger.info("Getting access token for user '%s'" % self._login)
-        with VerboseHTTPSession() as s:
+        with self.http_session as s:
             self.do_login(http_session=s)
             url_query_params = self.do_oauth2_authorization(session=s)
             logger.debug('url_query_params: %s', url_query_params)
 
         if 'access_token' in url_query_params:
-            logger.info('Done')
+            logger.info('Access token has been gotten')
             return url_query_params['access_token']
         else:
             raise VkAuthError('OAuth2 authorization error. Url params: %s'
@@ -303,7 +317,7 @@ class VKSession(object):
 
         :param request_obj: vk_requests.api.Request instance
         :param captcha_response: None or dict, e.g {'sid': <sid>, 'key': <key>}
-        :return: 
+        :return: dict: json decoded http response
         """
         logger.debug('Prepare API Method request %r', request_obj)
         response = self.send_api_request(request_obj=request_obj,
@@ -353,18 +367,22 @@ class VKSession(object):
 
         # Prepare request arguments
         method_kwargs = {'v': self.api_version}
+
         for values in (request_obj.method_args, ):
             method_kwargs.update(stringify_values(values))
 
-        if self.is_token_required():
+        if self.is_token_required() or self._service_token:
             # Auth api call if access_token hadn't been gotten earlier
             method_kwargs['access_token'] = self.access_token
+
         if captcha_response:
             method_kwargs['captcha_sid'] = captcha_response['sid']
             method_kwargs['captcha_key'] = captcha_response['key']
 
-        response = self.http_session.post(
-            url=url, data=method_kwargs, timeout=request_obj.timeout)
+        http_params = dict(url=url,
+                           data=method_kwargs,
+                           **request_obj.http_params)
+        response = self.http_session.post(**http_params)
         return response
 
     def __repr__(self):  # pragma: no cover

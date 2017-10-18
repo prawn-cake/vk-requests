@@ -11,3 +11,4 @@ USER_PASSWORD = os.getenv('VK_USER_PASSWORD', '')
 # aka API/Client ID
 APP_ID = os.getenv('VK_APP_ID')
 PHONE_NUMBER = os.getenv('VK_PHONE_NUMBER')
+SERVICE_TOKEN = os.getenv('VK_SERVICE_TOKEN')
