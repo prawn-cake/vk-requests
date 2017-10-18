@@ -3,7 +3,7 @@ Changelog
 
 0.9.9+1 (UNRELEASED)
 --------------------
-
+* [Feature] #26: Service token support
 
 0.9.9 (2017-07-18)
 ------------------
