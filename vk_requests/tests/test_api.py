@@ -177,3 +177,13 @@ class VkApiMethodsLiveTest(unittest.TestCase):
         self.assertIn('items', resp)
         for user_id in resp['items']:
             self.assertIsInstance(user_id, int)
+
+
+class VkApiMethodsCalledWithServiceTokenTest(unittest.TestCase):
+    def setUp(self):
+        self.api = vk_requests.create_api(service_token=SERVICE_TOKEN)
+
+    def test_wall_get(self):
+        resp = self.api.wall.get(owner_id=1)
+        self.assertIn('items', resp)
+        self.assertIn('count', resp)

@@ -33,7 +33,7 @@ This library is significantly improved fork of [vk](https://github.com/dimka665/
     ...
     
 **NOTE:** service token is preferable way, because it does not require user 
-credentials and oauth requests, but not all methods can be called with service token (e.g *execute* can't be)
+credentials and oauth requests, but **not all the methods can be called with service token** (e.g *execute* can't be)
 
 More info about service token: [Link](https://vk.com/dev/service_token) 
    
