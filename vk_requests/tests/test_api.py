@@ -8,7 +8,7 @@ from vk_requests.api import API
 from vk_requests.exceptions import VkAPIError
 from vk_requests import VKSession
 from vk_requests.settings import APP_ID, USER_LOGIN, USER_PASSWORD, \
-    PHONE_NUMBER
+    PHONE_NUMBER, SERVICE_TOKEN
 
 try:
     from unittest import mock
@@ -146,7 +146,7 @@ class VkApiMethodsLiveTest(unittest.TestCase):
     def test_set_status(self):
         """Test requires scope='status' vk permissions
         """
-        status_text = 'Welcome to noagent.168.estate'
+        status_text = 'Welcome to noagent.estate'
         api = self._create_api(scope=['offline', 'status'])
         self.assertEqual(api._session.scope, ['offline', 'status'])
 
@@ -177,3 +177,13 @@ class VkApiMethodsLiveTest(unittest.TestCase):
         self.assertIn('items', resp)
         for user_id in resp['items']:
             self.assertIsInstance(user_id, int)
+
+
+class VkApiMethodsCalledWithServiceTokenTest(unittest.TestCase):
+    def setUp(self):
+        self.api = vk_requests.create_api(service_token=SERVICE_TOKEN)
+
+    def test_wall_get(self):
+        resp = self.api.wall.get(owner_id=1)
+        self.assertIn('items', resp)
+        self.assertIn('count', resp)
