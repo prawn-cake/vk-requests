@@ -17,7 +17,7 @@ if PY_VERSION >= (3, 4):
 
 setup(
     name='vk-requests',
-    version='0.9.9',
+    version='1.0.0',
     packages=['vk_requests'],
     url='https://github.com/prawn-cake/vk-requests',
     license='MIT',
