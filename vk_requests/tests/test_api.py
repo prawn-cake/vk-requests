@@ -17,12 +17,12 @@ except ImportError:
 
 
 class VkApiTest(unittest.TestCase):
-    def test_create_api_without_token(self):
+    def test_create_api_without_any_token(self):
         api = vk_requests.create_api()
         self.assertIsInstance(api, API)
         self.assertIsNone(api._session._access_token)
 
-    def test_create_api_with_token(self):
+    def test_create_api_with_user_token(self):
         api = vk_requests.create_api(
             app_id=APP_ID, login=USER_LOGIN, password=USER_PASSWORD,
             phone_number=PHONE_NUMBER)
@@ -71,8 +71,11 @@ class VkApiTest(unittest.TestCase):
 
 
 class VkApiMethodsLiveTest(unittest.TestCase):
-    def setUp(self):
-        self.vk_api = vk_requests.create_api(lang='ru')
+    @classmethod
+    def setUpClass(cls):
+        cls.vk_api = vk_requests.create_api(lang='ru')
+        cls.api_st = vk_requests.create_api(service_token=SERVICE_TOKEN)
+        cls.api_ut = cls._create_api()  # user-token api
 
     @staticmethod
     def _create_api(**kwargs):
@@ -84,11 +87,11 @@ class VkApiMethodsLiveTest(unittest.TestCase):
         )
 
     def test_get_server_time(self):
-        server_time = self.vk_api.getServerTime()
+        server_time = self.api_st.getServerTime()
         self.assertTrue(int(server_time))
 
     def test_get_profiles_via_token(self):
-        profiles = self.vk_api.users.get(user_id=1)
+        profiles = self.api_st.users.get(user_id=1)
         self.assertIn(profiles[0]['last_name'], ('Durov', 'Дуров'))
 
     def test_users_search(self):
@@ -106,9 +109,7 @@ class VkApiMethodsLiveTest(unittest.TestCase):
             self.assertIsNone(resp)
             self.assertIn('no access_token passed', str(err))
 
-        # Create token-based API
-        api = self._create_api()
-        resp = api.users.search(**request_opts)
+        resp = self.api_ut.users.search(**request_opts)
         self.assertIsInstance(resp, dict)
         total_num, items = resp['count'], resp['items']
         self.assertIsInstance(total_num, int)
@@ -117,7 +118,7 @@ class VkApiMethodsLiveTest(unittest.TestCase):
             self.assertIn('screen_name', item)
 
     def test_get_friends(self):
-        items = self.vk_api.friends.get(
+        items = self.api_st.friends.get(
             fields=['nickname', 'city', 'can_see_all_posts'],
             user_id=1)
         self.assertIsInstance(items, dict)
@@ -171,19 +172,14 @@ class VkApiMethodsLiveTest(unittest.TestCase):
             self.assertIsInstance(msg, dict)
 
     def test_likes_get_list(self):
-        api = self._create_api()
-        resp = api.likes.getList(type='post', owner_id=1, item_id=815649)
+        resp = self.api_st.likes.getList(
+            type='post', owner_id=1, item_id=815649)
         self.assertIn('count', resp)
         self.assertIn('items', resp)
         for user_id in resp['items']:
             self.assertIsInstance(user_id, int)
 
-
-class VkApiMethodsCalledWithServiceTokenTest(unittest.TestCase):
-    def setUp(self):
-        self.api = vk_requests.create_api(service_token=SERVICE_TOKEN)
-
     def test_wall_get(self):
-        resp = self.api.wall.get(owner_id=1)
+        resp = self.api_st.wall.get(owner_id=1)
         self.assertIn('items', resp)
         self.assertIn('count', resp)
