@@ -1,7 +1,7 @@
 -r requirements.txt
 
 mock
-nose
-coverage
+pytest
+pytest-cov
 
 pytest-asyncio
