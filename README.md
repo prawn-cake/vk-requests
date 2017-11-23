@@ -103,9 +103,58 @@ it will be handled automatically, otherwise console input will be asked
     api = vk_requests.create_api(
         app_id=123, login='User', password='Password', phone_number='+79111234567')
 
+## Streaming API
+
+[Streaming API](https://vk.com/dev/streaming_api_docs) allows to subscribe on the events from vk.
+
+**NOTE:** Only for *python 3.4* and later
+
+### Install 
+    
+    pip install vk-requests[streaming]
+    
+
+### Stream rules
+
+    from vk_requests import StreamingAPI
+    
+    streaming_api = StreamingAPI(service_token="{YOUR_SERVICE_TOKEN}")
+    
+    # Add new rule
+    streaming_api.add_rule(value='my_keyword', tag='tag1')
+    
+    # Get all rules
+    rules = streaming_api.get_rules()
+    
+    # Remove the rule by tag
+    streaming_api.remove_rule(tag='tag1')
+    
+    
+
+### Consumer
+
+Streaming API provides convenient coroutine-based handler interface (callback)
+
+    import asyncio
+    from vk_requests import StreamingAPI
+    
+    api = StreamingAPI(service_token="{YOUR_SERVICE_TOKEN}")
+    stream = api.get_stream()
+    
+    @stream.consumer
+    @asyncio.coroutine
+    def handle_event(payload):
+        print(payload)
+
+
+    if __name__ == '__main__':
+        stream.consume()
+
 
 ## API docs
-https://vk.com/dev/methods
+
+* https://vk.com/dev/methods
+* https://vk.com/dev/streaming_api_docs
 
 
 ## Tests
@@ -114,7 +163,7 @@ Tests are mostly checking integration part, so it requires some vk authenticatio
 
 Before running tests locally define environment variables: 
     
-    export VK_USER_LOGIN=<login> VK_USER_PASSWORD=<password> VK_APP_ID=<app_id> VK_PHONE_NUMBER=<phone_number>
+    export VK_USER_LOGIN=<login> VK_USER_PASSWORD=<password> VK_APP_ID=<app_id> VK_PHONE_NUMBER=<phone_number> VK_SERVICE_TOKEN=<service_token>
 
 To run tests:
 

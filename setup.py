@@ -25,6 +25,9 @@ setup(
     author_email='ekimovsky.maksim@gmail.com',
     description='vk.com requests for humans. API library for vk.com',
     install_requires=install_requires,
+    extras_require={
+        'streaming:python_version>="3.4"': ['websockets']
+    },
     classifiers=[
         'Intended Audience :: Developers',
 
