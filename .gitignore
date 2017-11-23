@@ -3,3 +3,7 @@
 *.pyc
 .tox
 .md-changelog.cfg
+.cache/
+.coverage
+vk_requests.egg-info/
+__pycache__
