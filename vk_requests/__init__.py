@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from vk_requests.session import VKSession
 from vk_requests.api import API
-from vk_requests.streaming import StreamingAPI
 
 
 __version__ = '1.0.0'

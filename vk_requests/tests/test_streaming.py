@@ -3,7 +3,7 @@ import os
 import sys
 import pytest
 import asyncio
-from vk_requests import StreamingAPI
+from vk_requests.streaming import StreamingAPI
 
 SERVICE_TOKEN = os.getenv('VK_SERVICE_TOKEN')
 

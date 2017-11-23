@@ -116,7 +116,7 @@ it will be handled automatically, otherwise console input will be asked
 
 ### Stream rules
 
-    from vk_requests import StreamingAPI
+    from vk_requests.streaming import StreamingAPI
     
     streaming_api = StreamingAPI(service_token="{YOUR_SERVICE_TOKEN}")
     
