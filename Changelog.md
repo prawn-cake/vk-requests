@@ -3,14 +3,14 @@ Changelog
 
 1.0.0+1 (UNRELEASED)
 --------------------
-
+* [Feature] Streaming API
 
 1.0.0 (2017-10-18)
---------------------
+------------------
 * [Feature] #26: Service token support
 
 0.9.9 (2017-07-18)
---------------------
+------------------
 * [Bugfix] #25: Fix logging issues
 
 0.9.8 (2017-04-01)
