@@ -42,6 +42,8 @@ class Stream(object):
         if self._consumer_fn is not None:
             raise ValueError('Consumer function is already defined for this '
                              'Stream instance')
+        if not any([asyncio.iscoroutine(fn), asyncio.iscoroutinefunction(fn)]):
+            raise ValueError('Consumer function must be a coroutine')
         self._consumer_fn = fn
 
     def consume(self, timeout=None):
@@ -53,7 +55,7 @@ class Stream(object):
         if self._consumer_fn is None:
             raise ValueError('Consumer function is not defined yet')
 
-        logger.info('Start the consuming stream')
+        logger.info('Start consuming the stream')
 
         @asyncio.coroutine
         def worker(conn_url):
@@ -90,11 +92,12 @@ class Stream(object):
             logger.info('Timeout is reached. Closing the loop')
             loop.close()
         except KeyboardInterrupt:
+            logger.info('Closing the loop')
             loop.close()
 
 
 class StreamingAPI(object):
-    """VK Streamin API implementation
+    """VK Streaming API implementation
     Docs: https://vk.com/dev/streaming_api_docs
     """
 

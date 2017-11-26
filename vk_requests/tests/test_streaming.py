@@ -15,7 +15,7 @@ def api():
 
 @pytest.mark.skipIf(sys.version_info < (3, 4), reason="py34+")
 def test_streaming_api_basics(api):
-    # api.remove_rule(tag='hello')
+    api.remove_rule(tag='test_hello')
     resp = api.add_rule(value='Hello', tag='test_hello')
     assert resp['code'] == 200
 
@@ -40,15 +40,13 @@ def test_stream_consumer(api):
     # Add test rule to consume messages
     api.add_rule(value='Привет', tag='test_hello')
     stream = api.get_stream()
-    handler_was_called = None
 
-    @stream.consumer
     @asyncio.coroutine
     def handle_event(payload):
-        global handler_was_called
-        handler_was_called = True
         print(payload)
 
-    stream.consume(timeout=10)
+    stream.consumer(handle_event)
+
+    assert stream._consumer_fn is handle_event
+    stream.consume(timeout=5)
     api.remove_rule(tag='test_hello')
-    # assert handler_was_called is True
