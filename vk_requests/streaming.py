@@ -46,7 +46,7 @@ class Stream(object):
             raise ValueError('Consumer function must be a coroutine')
         self._consumer_fn = fn
 
-    def consume(self, timeout=None):
+    def consume(self, timeout=None, loop=None):
         """Start consuming the stream
 
         :param timeout: int: if it's given then it stops consumer after given
@@ -78,7 +78,9 @@ class Stream(object):
             finally:
                 yield from ws.close()
 
-        loop = asyncio.new_event_loop()
+        if loop is None:
+            loop = asyncio.new_event_loop()
+
         asyncio.set_event_loop(loop)
         try:
             task = worker(conn_url=self._conn_url)
