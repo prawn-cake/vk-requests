@@ -3,7 +3,7 @@ from vk_requests.session import VKSession
 from vk_requests.api import API
 
 
-__version__ = '1.0.0'
+__version__ = '1.1.0a1'
 
 
 def create_api(app_id=None, login=None, password=None, phone_number=None,

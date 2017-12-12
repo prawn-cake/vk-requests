@@ -17,7 +17,7 @@ if PY_VERSION >= (3, 4):
 
 setup(
     name='vk-requests',
-    version='1.0.0',
+    version='1.1.0a1',
     packages=['vk_requests'],
     url='https://github.com/prawn-cake/vk-requests',
     license='MIT',
@@ -25,6 +25,9 @@ setup(
     author_email='ekimovsky.maksim@gmail.com',
     description='vk.com requests for humans. API library for vk.com',
     install_requires=install_requires,
+    extras_require={
+        'streaming:python_version>="3.4"': ['websockets']
+    },
     classifiers=[
         'Intended Audience :: Developers',
 
