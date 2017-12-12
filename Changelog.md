@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.0.0+1 (UNRELEASED)
+1.1.0 (2017-12-12)
 --------------------
 * [Feature] Streaming API
 
