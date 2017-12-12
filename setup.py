@@ -11,19 +11,20 @@ install_requires = [
     'beautifulsoup4>=4.4.1']
 
 
-if PY_VERSION >= (3, 4):
-    install_requires.append('aiohttp')
+with open('README.md') as f:
+    readme = f.read()
 
 
 setup(
     name='vk-requests',
-    version='1.1.0a1',
+    version='1.0.0',
     packages=['vk_requests'],
     url='https://github.com/prawn-cake/vk-requests',
     license='MIT',
     author='Maksim Ekimovskii',
     author_email='ekimovsky.maksim@gmail.com',
     description='vk.com requests for humans. API library for vk.com',
+    long_description=readme,
     install_requires=install_requires,
     extras_require={
         'streaming:python_version>="3.4"': ['websockets']
