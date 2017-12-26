@@ -320,10 +320,12 @@ class VKSession(object):
         :return: dict: json decoded http response
         """
         logger.debug('Prepare API Method request %r', request_obj)
-        response = self.send_api_request(request_obj=request_obj,
-                                         captcha_response=captcha_response)
+        response = self._send_api_request(request_obj=request_obj,
+                                          captcha_response=captcha_response)
         response.raise_for_status()
         response_or_error = json.loads(response.text)
+        logger.debug('response: %s', response_or_error)
+
         if 'error' in response_or_error:
             error_data = response_or_error['error']
             vk_error = VkAPIError(error_data)
@@ -356,7 +358,7 @@ class VKSession(object):
         elif 'response' in response_or_error:
             return response_or_error['response']
 
-    def send_api_request(self, request_obj, captcha_response=None):
+    def _send_api_request(self, request_obj, captcha_response=None):
         """Prepare and send HTTP API request
 
         :param request_obj: vk_requests.api.Request instance 
@@ -382,6 +384,7 @@ class VKSession(object):
         http_params = dict(url=url,
                            data=method_kwargs,
                            **request_obj.http_params)
+        logger.debug('send_api_request:http_params: %s', http_params)
         response = self.http_session.post(**http_params)
         return response
 
