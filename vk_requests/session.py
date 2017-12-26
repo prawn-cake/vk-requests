@@ -27,8 +27,8 @@ class VKSession(object):
 
     LOGIN_URL = 'https://m.vk.com'
     AUTHORIZE_URL = 'https://oauth.vk.com/authorize'
-    CAPTCHA_URI = 'https://m.vk.com/captcha.php'
-    DEFAULT_API_VERSION = '5.45'
+    CAPTCHA_URI = 'https://api.vk.com/captcha.php'
+    DEFAULT_API_VERSION = '5.69'
 
     def __init__(self, app_id=None, user_login=None, user_password=None,
                  phone_number=None, scope='offline', api_version=None,
@@ -98,8 +98,9 @@ class VKSession(object):
 
         response_url_query = parse_url_query_params(
             login_response.url, fragment=False)
-        act = response_url_query.get('act')
+
         logger.debug('response_url_query: %s', response_url_query)
+        act = response_url_query.get('act')
 
         # Check response url query params firstly
         if 'sid' in response_url_query:
@@ -196,10 +197,10 @@ class VKSession(object):
         :param http_session: requests.Session
         :return: :raise VkAuthError:
         """
-        logger.info('Captcha is needed: %s', query_params)
+        logger.info('Captcha is needed. Query params: %s', query_params)
 
         action_url = parse_form_action_url(form_text)
-        logger.debug('form_url %s', action_url)
+        logger.debug('form action url: %s', action_url)
         if not action_url:
             raise VkAuthError('Cannot find form action url')
 
