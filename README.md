@@ -43,7 +43,15 @@ Just pass `scope` and/or `api_version` parameters like
 
     api = vk_requests.create_api(..., scope=['offline', 'status'], api_version='5.00')
     api.status.set(text='Hello world!')
-    
+
+### Custom http requests parameters
+
+To override [requests http parameters (e.g ssl options)](http://docs.python-requests.org/en/master/user/advanced/#ssl-cert-verification), just use `http_params` as follows:
+
+    api = vk_requests.create_api(http_params={'timeout': 15, 'verify': False})
+
+
+
 ### Enable logging
 
 To enable library logging in your project you should do as follows:

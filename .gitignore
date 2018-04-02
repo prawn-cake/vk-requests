@@ -7,3 +7,4 @@
 .coverage
 vk_requests.egg-info/
 __pycache__
+dist

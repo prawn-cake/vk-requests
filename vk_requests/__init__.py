@@ -7,8 +7,8 @@ __version__ = '1.1.0'
 
 
 def create_api(app_id=None, login=None, password=None, phone_number=None,
-               timeout=10, scope='offline', api_version=None,
-               interactive=False, service_token=None, **method_default_args):
+               scope='offline', api_version=None, http_params=None,
+               interactive=False, service_token=None):
     """Factory method to explicitly create API with app_id, login, password
     and phone_number parameters.
 
@@ -19,13 +19,12 @@ def create_api(app_id=None, login=None, password=None, phone_number=None,
     :param login: str: vk login
     :param password: str: vk password
     :param phone_number: str: phone number with country code (+71234568990)
-    :param timeout: int: api timeout in seconds
     :param scope: str or list of str: vk session scope
     :param api_version: str: vk api version, check https://vk.com/dev/versions
     :param interactive: bool: flag which indicates to use InteractiveVKSession
     :param service_token: str: new way of querying vk api, instead of getting
     oauth token
-    :param method_default_args: api kwargs
+    :param http_params: dict: requests http parameters passed along
     :return: api instance
     :rtype : vk_requests.api.API
     """
@@ -37,7 +36,7 @@ def create_api(app_id=None, login=None, password=None, phone_number=None,
                         service_token=service_token,
                         api_version=api_version,
                         interactive=interactive)
-    return API(session=session, timeout=timeout, **method_default_args)
+    return API(session=session, http_params=http_params)
 
 
 # Set default logging handler to avoid "No handler found" warnings.

@@ -313,15 +313,15 @@ class VKSession(object):
         """
         self._access_token = self._get_access_token()
 
-    def make_request(self, request_obj, captcha_response=None):
+    def make_request(self, request, captcha_response=None):
         """Make api request helper function
 
-        :param request_obj: vk_requests.api.Request instance
+        :param request: vk_requests.api.Request instance
         :param captcha_response: None or dict, e.g {'sid': <sid>, 'key': <key>}
         :return: dict: json decoded http response
         """
-        logger.debug('Prepare API Method request %r', request_obj)
-        response = self._send_api_request(request_obj=request_obj,
+        logger.debug('Prepare API Method request %r', request)
+        response = self._send_api_request(request=request,
                                           captcha_response=captcha_response)
         response.raise_for_status()
         response_or_error = json.loads(response.text)
@@ -342,13 +342,13 @@ class VKSession(object):
                     'key': captcha_key,
                 }
                 return self.make_request(
-                    request_obj, captcha_response=captcha_response)
+                    request, captcha_response=captcha_response)
 
             elif vk_error.is_access_token_incorrect():
                 logger.info(
                     'Authorization failed. Access token will be dropped')
                 self._access_token = None
-                return self.make_request(request_obj)
+                return self.make_request(request)
 
             else:
                 raise vk_error
@@ -359,19 +359,20 @@ class VKSession(object):
         elif 'response' in response_or_error:
             return response_or_error['response']
 
-    def _send_api_request(self, request_obj, captcha_response=None):
+    def _send_api_request(self, request, captcha_response=None):
         """Prepare and send HTTP API request
 
-        :param request_obj: vk_requests.api.Request instance 
+        :param request: vk_requests.api.Request instance
         :param captcha_response: None or dict 
         :return: HTTP response
         """
-        url = self.API_URL + request_obj.method_name
+        url = self.API_URL + request.method_name
 
         # Prepare request arguments
         method_kwargs = {'v': self.api_version}
 
-        for values in (request_obj.method_args, ):
+        # Shape up the request data
+        for values in (request.method_args,):
             method_kwargs.update(stringify_values(values))
 
         if self.is_token_required() or self._service_token:
@@ -384,7 +385,7 @@ class VKSession(object):
 
         http_params = dict(url=url,
                            data=method_kwargs,
-                           **request_obj.http_params)
+                           **request.http_params)
         logger.debug('send_api_request:http_params: %s', http_params)
         response = self.http_session.post(**http_params)
         return response

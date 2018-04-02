@@ -16,6 +16,13 @@ except ImportError:
     import mock
 
 
+def fake_request(return_text_value='{}'):
+    http_resp_mock = mock.Mock()
+    http_resp_mock.configure_mock(text=return_text_value)
+    return mock.patch('vk_requests.utils.VerboseHTTPSession.request',
+                      return_value=http_resp_mock)
+
+
 class VkApiTest(unittest.TestCase):
     def test_create_api_without_any_token(self):
         api = vk_requests.create_api()
@@ -73,7 +80,7 @@ class VkApiTest(unittest.TestCase):
 class VkApiMethodsLiveTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.vk_api = vk_requests.create_api(lang='ru')
+        cls.vk_api = vk_requests.create_api()
         cls.api_st = vk_requests.create_api(service_token=SERVICE_TOKEN)
         cls.api_ut = cls._create_api()  # user-token api
 
@@ -183,3 +190,16 @@ class VkApiMethodsLiveTest(unittest.TestCase):
         resp = self.api_st.wall.get(owner_id=1)
         self.assertIn('items', resp)
         self.assertIn('count', resp)
+
+
+def test_customize_http_params():
+    http_resp_mock = mock.Mock()
+    http_resp_mock.configure_mock(text='{}')
+    with fake_request() as req:
+        api = vk_requests.create_api(
+            http_params={'timeout': 15, 'verify': False})
+        api.users.get(user_id=1)
+        url_data, params = tuple(req.call_args_list[0])
+
+        assert params['verify'] is False
+        assert params['timeout'] == 15

@@ -6,22 +6,21 @@ logger = logging.getLogger('vk-requests')
 
 
 class API(object):
-    def __init__(self, session, http_params=None, **default_request_kwargs):
+    def __init__(self, session, http_params=None):
         """
 
         :param session: vk_requests.session.VKSession instance
         :param http_params: dict: requests HTTP parameters
-        :param default_request_kwargs:
         """
         self._session = session
+        self._http_params = http_params
         if http_params is None:
-            self.http_params = dict(timeout=10)
-        self._default_request_kwargs = default_request_kwargs
+            self._http_params = dict(timeout=10)
 
     def __getattr__(self, method_name):
         return Request(session=self._session,
                        method_name=method_name,
-                       http_params=self.http_params)
+                       http_params=self._http_params)
 
 
 class Request(object):
@@ -61,7 +60,7 @@ class Request(object):
 
     def __call__(self, **method_args):
         self._method_args = method_args
-        return self._session.make_request(request_obj=self)
+        return self._session.make_request(request=self)
 
     def __repr__(self):  # pragma: no cover
         return "%s(method='%s', args=%s)" % (
