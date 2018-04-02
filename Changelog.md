@@ -1,8 +1,12 @@
 Changelog
 =========
 
-1.1.0 (2017-12-12)
+1.1.1 (2018-04-02)
 --------------------
+* [Feature] Allow to override requests http params
+
+1.1.0 (2017-12-12)
+------------------
 * [Feature] Streaming API
 
 1.0.0 (2017-10-18)
