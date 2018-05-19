@@ -172,8 +172,8 @@ Streaming API provides convenient coroutine-based handler interface (callback)
 
 ## Official API docs
 
-* https://vk.com/dev/methods
-* https://vk.com/dev/streaming_api_docs
+* [https://vk.com/dev/methods](https://vk.com/dev/methods)
+* [https://vk.com/dev/streaming_api_docs](https://vk.com/dev/streaming_api_docs)
 
 
 ## Tests
