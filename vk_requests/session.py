@@ -10,6 +10,11 @@ from vk_requests.utils import parse_url_query_params, VerboseHTTPSession, \
     check_html_warnings
 
 try:
+    from urllib.parse import urljoin
+except ImportError:  # py2
+    from urlparse import urljoin
+
+try:
     import ujson as json
 except ImportError:
     import json
@@ -105,8 +110,8 @@ class VKSession(object):
         # Check response url query params firstly
         if 'sid' in response_url_query:
             self.require_auth_captcha(
+                response=login_response,
                 query_params=response_url_query,
-                form_text=login_response.text,
                 login_form_data=login_form_data,
                 http_session=http_session)
 
@@ -185,30 +190,34 @@ class VKSession(object):
         response = http_session.post(url=url, data=auth_check_data)
         return response
 
-    def require_auth_captcha(self, query_params, form_text, login_form_data,
-                             http_session):
+    def require_auth_captcha(self, response, query_params,
+                             login_form_data, http_session):
         """Resolve auth captcha case
 
+        :param response: http response
         :param query_params: dict: response query params, for example:
         {'s': '0', 'email': 'my@email', 'dif': '1', 'role': 'fast', 'sid': '1'}
 
-        :param form_text: str: raw form html data
         :param login_form_data: dict
         :param http_session: requests.Session
         :return: :raise VkAuthError:
         """
         logger.info('Captcha is needed. Query params: %s', query_params)
+        form_text = response.text
 
         action_url = parse_form_action_url(form_text)
         logger.debug('form action url: %s', action_url)
         if not action_url:
             raise VkAuthError('Cannot find form action url')
 
-        captcha_url = '%s?s=%s&sid=%s' % (
-            self.CAPTCHA_URI, query_params['s'], query_params['sid'])
+        parser = bs4.BeautifulSoup(form_text, 'html.parser')
+        captcha_sid = parser.find('input', {"name": "captcha_sd"}).get("value")
+        captcha_img = parser.find('img', {"id": "captcha"}).get("src")
+        captcha_url = urljoin(response.url, captcha_img)
+
         logger.info('Captcha url %s', captcha_url)
 
-        login_form_data['captcha_sid'] = query_params['sid']
+        login_form_data['captcha_sid'] = captcha_sid
         login_form_data['captcha_key'] = self.get_captcha_key(captcha_url)
 
         response = http_session.post(action_url, login_form_data)
