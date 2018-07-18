@@ -1,0 +1,4 @@
+site_name: vk-requests
+pages:
+    - Home: index.md
+theme: material

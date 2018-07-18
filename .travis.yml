@@ -1,0 +1,23 @@
+language: python
+python:
+  - "2.7"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+cache: pip
+install:
+  - pip install tox-travis
+  - pip install -r requirements.txt
+  - pip install tox coveralls
+script:
+  - tox -r
+after_success:
+  coveralls
+
+deploy:
+  provider: pages
+  skip-cleanup: true
+  github-token: $GITHUB_TOKEN
+  keep-history: true
+  on:
+    branch: master
