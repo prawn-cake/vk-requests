@@ -13,10 +13,10 @@ logger = logging.getLogger('vk-requests')
 try:
     # Python 2
     from urllib import urlencode
-    from urlparse import urlparse, parse_qsl
+    from urlparse import urlparse, parse_qsl, urljoin
 except ImportError:
     # Python 3
-    from urllib.parse import urlparse, parse_qsl, urlencode
+    from urllib.parse import urlparse, parse_qsl, urlencode, urljoin
 
 
 def stringify_values(data):
@@ -86,6 +86,14 @@ def parse_form_action_url(html, parser=None):
         raise VkParseError('Find more than 1 forms to handle:\n%s', forms)
     form = forms[0]
     return form.get('action')
+
+
+def parse_captcha_html(html, response_url):
+    parser = bs4.BeautifulSoup(html, 'html.parser')
+    captcha_sid = parser.find('input', {"name": "captcha_sid"}).get("value")
+    captcha_img = parser.find('img', {"id": "captcha"}).get("src")
+    captcha_url = urljoin(response_url, captcha_img)
+    return captcha_sid, captcha_url
 
 
 def parse_masked_phone_number(html, parser=None):

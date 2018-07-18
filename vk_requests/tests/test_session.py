@@ -89,7 +89,7 @@ class VKSessionTest(unittest.TestCase):
             vk_session.do_login(http_session=session)
             self.assertTrue(require_captcha.called)
             call_params = dict(tuple(require_captcha.call_args_list[0])[1])
-            keys = ('query_params', 'form_text', 'login_form_data',
+            keys = ('query_params', 'response', 'login_form_data',
                     'http_session')
             for k in keys:
                 self.assertIn(k, call_params)

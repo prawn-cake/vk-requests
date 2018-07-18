@@ -171,7 +171,7 @@ class VkApiMethodsLiveTest(unittest.TestCase):
         resp = api.status.get()
         self.assertIn('text', resp)
 
-        resp = api.messages.get()
+        resp = api.messages.search(q='test')
         self.assertIsInstance(resp, dict)
         total_msg, msg_list = resp['count'], resp['items']
         self.assertIsInstance(total_msg, int)

@@ -7,12 +7,7 @@ from six.moves import input as raw_input
 from vk_requests.exceptions import VkAuthError, VkAPIError, VkParseError
 from vk_requests.utils import parse_url_query_params, VerboseHTTPSession, \
     parse_form_action_url, stringify_values, parse_masked_phone_number, \
-    check_html_warnings
-
-try:
-    from urllib.parse import urljoin
-except ImportError:  # py2
-    from urlparse import urljoin
+    check_html_warnings, parse_captcha_html
 
 try:
     import ujson as json
@@ -210,11 +205,8 @@ class VKSession(object):
         if not action_url:
             raise VkAuthError('Cannot find form action url')
 
-        parser = bs4.BeautifulSoup(form_text, 'html.parser')
-        captcha_sid = parser.find('input', {"name": "captcha_sd"}).get("value")
-        captcha_img = parser.find('img', {"id": "captcha"}).get("src")
-        captcha_url = urljoin(response.url, captcha_img)
-
+        captcha_sid, captcha_url = parse_captcha_html(
+            html=response.text, response_url=response.url)
         logger.info('Captcha url %s', captcha_url)
 
         login_form_data['captcha_sid'] = captcha_sid
