@@ -8,16 +8,19 @@ cache: pip
 install:
   - pip install tox-travis
   - pip install -r requirements.txt
-  - pip install tox coveralls
+  - pip install tox coveralls mkdocs mkdocs-material
 script:
   - tox -r
 after_success:
-  coveralls
+  - coveralls
+  - mkdocs build
 
 deploy:
   provider: pages
   skip-cleanup: true
   github-token: $GITHUB_TOKEN
+  local-dir: 'site'
   keep-history: true
+  verbose: true
   on:
     branch: master
