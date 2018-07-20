@@ -7,6 +7,7 @@
 
 * python (2.7, 3.4, 3.5, 3.6)
 
+**NOTE:** Python 2.7 will be no longer supported starting from the version 2.0.0
 
 ## Install
 
