@@ -1,4 +1,5 @@
 site_name: vk-requests
 pages:
     - Home: index.md
+    - Changelog: Changelog.md
 theme: material
