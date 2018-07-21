@@ -1,9 +1,9 @@
 Changelog
 =========
 
-1.1.1+1 (UNRELEASED)
+1.1.2 (2018-07-21)
 --------------------
-* [Bugfix] Fix captcha parsing
+* [Bugfix] [#29](https://github.com/prawn-cake/vk-requests/issues/29): Fix captcha parsing
 
 1.1.1 (2018-04-02)
 ------------------
