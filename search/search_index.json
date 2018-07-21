@@ -1,123 +1,123 @@
 {
     "docs": [
         {
-            "location": "/",
-            "text": "VK requests for humans\u2122\n\n\nvk.com\n is the largest social network in Russia.\n\n\nRequirements\n\n\n\n\npython (2.7, 3.4, 3.5, 3.6)\n\n\n\n\nNOTE:\n Python 2.7 will be no longer supported starting from the version 2.0.0\n\n\nInstall\n\n\npip install vk-requests\n\n\n\nUsage and features\n\n\nSimple queries\n\n\n# Returns list of users\napi.users.get(users_ids=1)\n\n# Returns list of user's friends with extra fields \napi.friends.get(user_id=1, fields=['nickname', 'city'])\n\n# Returns result list from your custom api method\napi.execute.YourMethod(**method_params)\n\n\n\nUser token with login and password\n\n\nFits the usecase when you run queries from one on the backend from one of your accounts\n\n\nimport vk_requests\n\n\napi = vk_requests.create_api(app_id=123, login='User', password='Password')\napi.users.get(user_ids=1)\n[{'first_name': 'Pavel', 'last_name': 'Durov', 'id': 1}]\n\n\n\nUsing service token\n\n\nService token is preferable way, because it does not require user \ncredentials and oauth requests, but \nnot all the methods can be called with service token\n (e.g \nexecute\n can't be)\n\n\napi = vk_requests.create_api(service_token=\"{YOUR_APP_SERVICE_TOKEN}\")\n...\n\n\n\nMore info\n about service token.\n\n\nUsing client access token\n\n\nFor example when you got a token on the client side (\nimplicit flow\n) and want to query API on the backend.\n\n\nUse \nservice_token\n parameter as in the example above. \n\n\nUsing custom parameters\n\n\nScope or api version\n\n\nJust pass \nscope\n and/or \napi_version\n parameters like\n\n\napi = vk_requests.create_api(..., scope=['offline', 'status'], api_version='5.00')\napi.status.set(text='Hello world!')\n\n\n\nHTTP parameters\n\n\nTo override \nrequests http parameters (e.g ssl options)\n, \njust use \nhttp_params\n as follows:\n\n\napi = vk_requests.create_api(http_params={'timeout': 15, 'verify': False})\n\n\n\nEnable logging\n\n\nTo enable library logging in your project you should do as follows:\n\n\nimport logging\n\n# Setup basic config\nlogging.basicConfig(\n    level=logging.INFO,\n    format='%(asctime)s %(levelname)s [%(name)s] %(message)s',\n)\n\n# To change log level for the library logger\nlogging.getLogger('vk-requests').setLevel(logging.DEBUG)\n\n\n\nAuto-resolving conflicts when you're getting access from unusual place\n\n\nJust pass your phone number during API initialization. In case of security check \nit will be handled automatically, otherwise console input will be asked\n\n\napi = vk_requests.create_api(\n    app_id=123, login='User', password='Password', phone_number='+79111234567')\n\n\n\nInteractive session\n\n\nInteractive session gives you control over login parameters during the runtime. \n\n\nUseful if\n\n\n\n\n2FA authentication required\n\n\nCAPTCHA required\n\n\nFor testing purposes\n\n\n\n\nUsage\n\n\napi = vk_requests.create_api(..., interactive=True)\n\n\n\nIf you don't pass login, password and app_id you will be asked to prompt it, i.e having this\n\n\napi = vk_requests.create_api(app_id=XXX, login='***', password='***', interactive=True)\n\n\n\nYou will be asked only for \n2FA authentication\n or \ncaptcha\n code if required \n\n\nStreaming API\n\n\nStreaming API\n allows to subscribe on the events from vk.\n\n\nNOTE:\n Only for \npython 3.4\n and later\n\n\nInstall\n\n\npip install vk-requests[streaming]\n\n\n\nStream rules\n\n\nfrom vk_requests.streaming import StreamingAPI\n\nstreaming_api = StreamingAPI(service_token=\"{YOUR_SERVICE_TOKEN}\")\n\n# Add new rule\nstreaming_api.add_rule(value='my_keyword', tag='tag1')\n\n# Get all rules\nrules = streaming_api.get_rules()\n\n# Remove the rule by tag\nstreaming_api.remove_rule(tag='tag1')\n\n\n\nConsumer\n\n\nStreaming API provides convenient coroutine-based handler interface (callback)\n\n\nimport asyncio\nfrom vk_requests import StreamingAPI\n\napi = StreamingAPI(service_token=\"{YOUR_SERVICE_TOKEN}\")\nstream = api.get_stream()\n\n@stream.consumer\n@asyncio.coroutine\ndef handle_event(payload):\n    print(payload)\n\n\nif __name__ == '__main__':\n    stream.consume()\n\n\n\nOfficial API docs\n\n\n\n\nhttps://vk.com/dev/methods\n\n\nhttps://vk.com/dev/streaming_api_docs\n\n\n\n\nTests\n\n\nTests are mostly checking integration part, so it requires some vk authentication data.\n\n\nBefore running tests locally define environment variables: \n\n\nexport VK_USER_LOGIN=<login> VK_USER_PASSWORD=<password> VK_APP_ID=<app_id> VK_PHONE_NUMBER=<phone_number> VK_SERVICE_TOKEN=<service_token>\n\n\n\nTo run tests:\n\n\ntox\n\n\n\nBug tracker\n\n\nWarm welcome for suggestions and concerns. Feel free to submit it to the \nIssues section\n\n\nLicense\n\n\nMIT - \nhttp://opensource.org/licenses/MIT",
+            "location": "/", 
+            "text": "VK requests for humans\u2122\n\n\nvk.com\n is the largest social network in Russia.\n\n\nRequirements\n\n\n\n\npython (2.7, 3.4, 3.5, 3.6)\n\n\n\n\nNOTE:\n Python 2.7 will be no longer supported starting from the version 2.0.0\n\n\nInstall\n\n\npip install vk-requests\n\n\n\nUsage and features\n\n\nSimple queries\n\n\n# Returns list of users\napi.users.get(users_ids=1)\n\n# Returns list of user's friends with extra fields \napi.friends.get(user_id=1, fields=['nickname', 'city'])\n\n# Returns result list from your custom api method\napi.execute.YourMethod(**method_params)\n\n\n\nUser token with login and password\n\n\nFits the usecase when you run queries from one on the backend from one of your accounts\n\n\nimport vk_requests\n\n\napi = vk_requests.create_api(app_id=123, login='User', password='Password')\napi.users.get(user_ids=1)\n[{'first_name': 'Pavel', 'last_name': 'Durov', 'id': 1}]\n\n\n\nUsing service token\n\n\nService token is preferable way, because it does not require user \ncredentials and oauth requests, but \nnot all the methods can be called with service token\n (e.g \nexecute\n can't be)\n\n\napi = vk_requests.create_api(service_token=\"{YOUR_APP_SERVICE_TOKEN}\")\n...\n\n\n\nMore info\n about service token.\n\n\nUsing client access token\n\n\nFor example when you got a token on the client side (\nimplicit flow\n) and want to query API on the backend.\n\n\nUse \nservice_token\n parameter as in the example above. \n\n\nUsing custom parameters\n\n\nScope or api version\n\n\nJust pass \nscope\n and/or \napi_version\n parameters like\n\n\napi = vk_requests.create_api(..., scope=['offline', 'status'], api_version='5.00')\napi.status.set(text='Hello world!')\n\n\n\nHTTP parameters\n\n\nTo override \nrequests http parameters (e.g ssl options)\n, \njust use \nhttp_params\n as follows:\n\n\napi = vk_requests.create_api(http_params={'timeout': 15, 'verify': False})\n\n\n\nEnable logging\n\n\nTo enable library logging in your project you should do as follows:\n\n\nimport logging\n\n# Setup basic config\nlogging.basicConfig(\n    level=logging.INFO,\n    format='%(asctime)s %(levelname)s [%(name)s] %(message)s',\n)\n\n# To change log level for the library logger\nlogging.getLogger('vk-requests').setLevel(logging.DEBUG)\n\n\n\nAuto-resolving conflicts when you're getting access from unusual place\n\n\nJust pass your phone number during API initialization. In case of security check \nit will be handled automatically, otherwise console input will be asked\n\n\napi = vk_requests.create_api(\n    app_id=123, login='User', password='Password', phone_number='+79111234567')\n\n\n\nInteractive session\n\n\nInteractive session gives you control over login parameters during the runtime. \n\n\nUseful if\n\n\n\n\n2FA authentication required\n\n\nCAPTCHA required\n\n\nFor testing purposes\n\n\n\n\nUsage\n\n\napi = vk_requests.create_api(..., interactive=True)\n\n\n\nIf you don't pass login, password and app_id you will be asked to prompt it, i.e having this\n\n\napi = vk_requests.create_api(app_id=XXX, login='***', password='***', interactive=True)\n\n\n\nYou will be asked only for \n2FA authentication\n or \ncaptcha\n code if required \n\n\nStreaming API\n\n\nStreaming API\n allows to subscribe on the events from vk.\n\n\nNOTE:\n Only for \npython 3.4\n and later\n\n\nInstall\n\n\npip install vk-requests[streaming]\n\n\n\nStream rules\n\n\nfrom vk_requests.streaming import StreamingAPI\n\nstreaming_api = StreamingAPI(service_token=\"{YOUR_SERVICE_TOKEN}\")\n\n# Add new rule\nstreaming_api.add_rule(value='my_keyword', tag='tag1')\n\n# Get all rules\nrules = streaming_api.get_rules()\n\n# Remove the rule by tag\nstreaming_api.remove_rule(tag='tag1')\n\n\n\nConsumer\n\n\nStreaming API provides convenient coroutine-based handler interface (callback)\n\n\nimport asyncio\nfrom vk_requests import StreamingAPI\n\napi = StreamingAPI(service_token=\"{YOUR_SERVICE_TOKEN}\")\nstream = api.get_stream()\n\n@stream.consumer\n@asyncio.coroutine\ndef handle_event(payload):\n    print(payload)\n\n\nif __name__ == '__main__':\n    stream.consume()\n\n\n\nOfficial API docs\n\n\n\n\nhttps://vk.com/dev/methods\n\n\nhttps://vk.com/dev/streaming_api_docs\n\n\n\n\nTests\n\n\nTests are mostly checking integration part, so it requires some vk authentication data.\n\n\nBefore running tests locally define environment variables: \n\n\nexport VK_USER_LOGIN=\nlogin\n VK_USER_PASSWORD=\npassword\n VK_APP_ID=\napp_id\n VK_PHONE_NUMBER=\nphone_number\n VK_SERVICE_TOKEN=\nservice_token\n\n\n\n\nTo run tests:\n\n\ntox\n\n\n\nBug tracker\n\n\nWarm welcome for suggestions and concerns. Feel free to submit it to the \nIssues section\n\n\nLicense\n\n\nMIT - \nhttp://opensource.org/licenses/MIT", 
             "title": "Home"
-        },
+        }, 
         {
-            "location": "/#vk-requests-for-humanstm",
-            "text": "vk.com  is the largest social network in Russia.",
+            "location": "/#vk-requests-for-humanstm", 
+            "text": "vk.com  is the largest social network in Russia.", 
             "title": "VK requests for humans\u2122"
-        },
+        }, 
         {
-            "location": "/#requirements",
-            "text": "python (2.7, 3.4, 3.5, 3.6)   NOTE:  Python 2.7 will be no longer supported starting from the version 2.0.0",
+            "location": "/#requirements", 
+            "text": "python (2.7, 3.4, 3.5, 3.6)   NOTE:  Python 2.7 will be no longer supported starting from the version 2.0.0", 
             "title": "Requirements"
-        },
+        }, 
         {
-            "location": "/#install",
-            "text": "pip install vk-requests",
+            "location": "/#install", 
+            "text": "pip install vk-requests", 
             "title": "Install"
-        },
+        }, 
         {
-            "location": "/#usage-and-features",
-            "text": "",
+            "location": "/#usage-and-features", 
+            "text": "", 
             "title": "Usage and features"
-        },
+        }, 
         {
-            "location": "/#simple-queries",
-            "text": "# Returns list of users\napi.users.get(users_ids=1)\n\n# Returns list of user's friends with extra fields \napi.friends.get(user_id=1, fields=['nickname', 'city'])\n\n# Returns result list from your custom api method\napi.execute.YourMethod(**method_params)",
+            "location": "/#simple-queries", 
+            "text": "# Returns list of users\napi.users.get(users_ids=1)\n\n# Returns list of user's friends with extra fields \napi.friends.get(user_id=1, fields=['nickname', 'city'])\n\n# Returns result list from your custom api method\napi.execute.YourMethod(**method_params)", 
             "title": "Simple queries"
-        },
+        }, 
         {
-            "location": "/#user-token-with-login-and-password",
-            "text": "Fits the usecase when you run queries from one on the backend from one of your accounts  import vk_requests\n\n\napi = vk_requests.create_api(app_id=123, login='User', password='Password')\napi.users.get(user_ids=1)\n[{'first_name': 'Pavel', 'last_name': 'Durov', 'id': 1}]",
+            "location": "/#user-token-with-login-and-password", 
+            "text": "Fits the usecase when you run queries from one on the backend from one of your accounts  import vk_requests\n\n\napi = vk_requests.create_api(app_id=123, login='User', password='Password')\napi.users.get(user_ids=1)\n[{'first_name': 'Pavel', 'last_name': 'Durov', 'id': 1}]", 
             "title": "User token with login and password"
-        },
+        }, 
         {
-            "location": "/#using-service-token",
-            "text": "Service token is preferable way, because it does not require user \ncredentials and oauth requests, but  not all the methods can be called with service token  (e.g  execute  can't be)  api = vk_requests.create_api(service_token=\"{YOUR_APP_SERVICE_TOKEN}\")\n...  More info  about service token.",
+            "location": "/#using-service-token", 
+            "text": "Service token is preferable way, because it does not require user \ncredentials and oauth requests, but  not all the methods can be called with service token  (e.g  execute  can't be)  api = vk_requests.create_api(service_token=\"{YOUR_APP_SERVICE_TOKEN}\")\n...  More info  about service token.", 
             "title": "Using service token"
-        },
+        }, 
         {
-            "location": "/#using-client-access-token",
-            "text": "For example when you got a token on the client side ( implicit flow ) and want to query API on the backend.  Use  service_token  parameter as in the example above.",
+            "location": "/#using-client-access-token", 
+            "text": "For example when you got a token on the client side ( implicit flow ) and want to query API on the backend.  Use  service_token  parameter as in the example above.", 
             "title": "Using client access token"
-        },
+        }, 
         {
-            "location": "/#using-custom-parameters",
-            "text": "",
+            "location": "/#using-custom-parameters", 
+            "text": "", 
             "title": "Using custom parameters"
-        },
+        }, 
         {
-            "location": "/#scope-or-api-version",
-            "text": "Just pass  scope  and/or  api_version  parameters like  api = vk_requests.create_api(..., scope=['offline', 'status'], api_version='5.00')\napi.status.set(text='Hello world!')",
+            "location": "/#scope-or-api-version", 
+            "text": "Just pass  scope  and/or  api_version  parameters like  api = vk_requests.create_api(..., scope=['offline', 'status'], api_version='5.00')\napi.status.set(text='Hello world!')", 
             "title": "Scope or api version"
-        },
+        }, 
         {
-            "location": "/#http-parameters",
-            "text": "To override  requests http parameters (e.g ssl options) , \njust use  http_params  as follows:  api = vk_requests.create_api(http_params={'timeout': 15, 'verify': False})",
+            "location": "/#http-parameters", 
+            "text": "To override  requests http parameters (e.g ssl options) , \njust use  http_params  as follows:  api = vk_requests.create_api(http_params={'timeout': 15, 'verify': False})", 
             "title": "HTTP parameters"
-        },
+        }, 
         {
-            "location": "/#enable-logging",
-            "text": "To enable library logging in your project you should do as follows:  import logging\n\n# Setup basic config\nlogging.basicConfig(\n    level=logging.INFO,\n    format='%(asctime)s %(levelname)s [%(name)s] %(message)s',\n)\n\n# To change log level for the library logger\nlogging.getLogger('vk-requests').setLevel(logging.DEBUG)",
+            "location": "/#enable-logging", 
+            "text": "To enable library logging in your project you should do as follows:  import logging\n\n# Setup basic config\nlogging.basicConfig(\n    level=logging.INFO,\n    format='%(asctime)s %(levelname)s [%(name)s] %(message)s',\n)\n\n# To change log level for the library logger\nlogging.getLogger('vk-requests').setLevel(logging.DEBUG)", 
             "title": "Enable logging"
-        },
+        }, 
         {
-            "location": "/#auto-resolving-conflicts-when-youre-getting-access-from-unusual-place",
-            "text": "Just pass your phone number during API initialization. In case of security check \nit will be handled automatically, otherwise console input will be asked  api = vk_requests.create_api(\n    app_id=123, login='User', password='Password', phone_number='+79111234567')",
+            "location": "/#auto-resolving-conflicts-when-youre-getting-access-from-unusual-place", 
+            "text": "Just pass your phone number during API initialization. In case of security check \nit will be handled automatically, otherwise console input will be asked  api = vk_requests.create_api(\n    app_id=123, login='User', password='Password', phone_number='+79111234567')", 
             "title": "Auto-resolving conflicts when you're getting access from unusual place"
-        },
+        }, 
         {
-            "location": "/#interactive-session",
-            "text": "Interactive session gives you control over login parameters during the runtime.   Useful if   2FA authentication required  CAPTCHA required  For testing purposes",
+            "location": "/#interactive-session", 
+            "text": "Interactive session gives you control over login parameters during the runtime.   Useful if   2FA authentication required  CAPTCHA required  For testing purposes", 
             "title": "Interactive session"
-        },
+        }, 
         {
-            "location": "/#usage",
-            "text": "api = vk_requests.create_api(..., interactive=True)  If you don't pass login, password and app_id you will be asked to prompt it, i.e having this  api = vk_requests.create_api(app_id=XXX, login='***', password='***', interactive=True)  You will be asked only for  2FA authentication  or  captcha  code if required",
+            "location": "/#usage", 
+            "text": "api = vk_requests.create_api(..., interactive=True)  If you don't pass login, password and app_id you will be asked to prompt it, i.e having this  api = vk_requests.create_api(app_id=XXX, login='***', password='***', interactive=True)  You will be asked only for  2FA authentication  or  captcha  code if required", 
             "title": "Usage"
-        },
+        }, 
         {
-            "location": "/#streaming-api",
-            "text": "Streaming API  allows to subscribe on the events from vk.  NOTE:  Only for  python 3.4  and later",
+            "location": "/#streaming-api", 
+            "text": "Streaming API  allows to subscribe on the events from vk.  NOTE:  Only for  python 3.4  and later", 
             "title": "Streaming API"
-        },
+        }, 
         {
-            "location": "/#install_1",
-            "text": "pip install vk-requests[streaming]",
+            "location": "/#install_1", 
+            "text": "pip install vk-requests[streaming]", 
             "title": "Install"
-        },
+        }, 
         {
-            "location": "/#stream-rules",
-            "text": "from vk_requests.streaming import StreamingAPI\n\nstreaming_api = StreamingAPI(service_token=\"{YOUR_SERVICE_TOKEN}\")\n\n# Add new rule\nstreaming_api.add_rule(value='my_keyword', tag='tag1')\n\n# Get all rules\nrules = streaming_api.get_rules()\n\n# Remove the rule by tag\nstreaming_api.remove_rule(tag='tag1')",
+            "location": "/#stream-rules", 
+            "text": "from vk_requests.streaming import StreamingAPI\n\nstreaming_api = StreamingAPI(service_token=\"{YOUR_SERVICE_TOKEN}\")\n\n# Add new rule\nstreaming_api.add_rule(value='my_keyword', tag='tag1')\n\n# Get all rules\nrules = streaming_api.get_rules()\n\n# Remove the rule by tag\nstreaming_api.remove_rule(tag='tag1')", 
             "title": "Stream rules"
-        },
+        }, 
         {
-            "location": "/#consumer",
-            "text": "Streaming API provides convenient coroutine-based handler interface (callback)  import asyncio\nfrom vk_requests import StreamingAPI\n\napi = StreamingAPI(service_token=\"{YOUR_SERVICE_TOKEN}\")\nstream = api.get_stream()\n\n@stream.consumer\n@asyncio.coroutine\ndef handle_event(payload):\n    print(payload)\n\n\nif __name__ == '__main__':\n    stream.consume()",
+            "location": "/#consumer", 
+            "text": "Streaming API provides convenient coroutine-based handler interface (callback)  import asyncio\nfrom vk_requests import StreamingAPI\n\napi = StreamingAPI(service_token=\"{YOUR_SERVICE_TOKEN}\")\nstream = api.get_stream()\n\n@stream.consumer\n@asyncio.coroutine\ndef handle_event(payload):\n    print(payload)\n\n\nif __name__ == '__main__':\n    stream.consume()", 
             "title": "Consumer"
-        },
+        }, 
         {
-            "location": "/#official-api-docs",
-            "text": "https://vk.com/dev/methods  https://vk.com/dev/streaming_api_docs",
+            "location": "/#official-api-docs", 
+            "text": "https://vk.com/dev/methods  https://vk.com/dev/streaming_api_docs", 
             "title": "Official API docs"
-        },
+        }, 
         {
-            "location": "/#tests",
-            "text": "Tests are mostly checking integration part, so it requires some vk authentication data.  Before running tests locally define environment variables:   export VK_USER_LOGIN=<login> VK_USER_PASSWORD=<password> VK_APP_ID=<app_id> VK_PHONE_NUMBER=<phone_number> VK_SERVICE_TOKEN=<service_token>  To run tests:  tox",
+            "location": "/#tests", 
+            "text": "Tests are mostly checking integration part, so it requires some vk authentication data.  Before running tests locally define environment variables:   export VK_USER_LOGIN= login  VK_USER_PASSWORD= password  VK_APP_ID= app_id  VK_PHONE_NUMBER= phone_number  VK_SERVICE_TOKEN= service_token   To run tests:  tox", 
             "title": "Tests"
-        },
+        }, 
         {
-            "location": "/#bug-tracker",
-            "text": "Warm welcome for suggestions and concerns. Feel free to submit it to the  Issues section",
+            "location": "/#bug-tracker", 
+            "text": "Warm welcome for suggestions and concerns. Feel free to submit it to the  Issues section", 
             "title": "Bug tracker"
-        },
+        }, 
         {
-            "location": "/#license",
-            "text": "MIT -  http://opensource.org/licenses/MIT",
+            "location": "/#license", 
+            "text": "MIT -  http://opensource.org/licenses/MIT", 
             "title": "License"
         }
     ]
