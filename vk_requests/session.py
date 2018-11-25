@@ -1,13 +1,13 @@
-# -*- coding: utf-8 -*-
+ # -*- coding: utf-8 -*-
 
 import logging
 
 from six.moves import input as raw_input
 
-from vk_requests.exceptions import VkAuthError, VkAPIError, VkParseError
-from vk_requests.utils import parse_url_query_params, VerboseHTTPSession, \
+from .exceptions import VkAuthError, VkAPIError, VkParseError
+from .utils import parse_url_query_params, VerboseHTTPSession, \
     parse_form_action_url, stringify_values, parse_masked_phone_number, \
-    check_html_warnings, parse_captcha_html
+    check_html_warnings
 
 try:
     import ujson as json
@@ -32,7 +32,7 @@ class VKSession(object):
 
     def __init__(self, app_id=None, user_login=None, user_password=None,
                  phone_number=None, scope='offline', api_version=None,
-                 interactive=False, service_token=None):
+                 interactive=False, service_token=None, proxies=None):
         """IMPORTANT: (app_id + user_login + user_password) and service_token
         are mutually exclusive
 
@@ -46,6 +46,7 @@ class VKSession(object):
         self.interactive = interactive
         self._access_token = None
         self._api_version = api_version
+        self.proxies = proxies
 
         # requests.Session subclass instance
         self._http_session = None
@@ -105,8 +106,8 @@ class VKSession(object):
         # Check response url query params firstly
         if 'sid' in response_url_query:
             self.require_auth_captcha(
-                response=login_response,
                 query_params=response_url_query,
+                form_text=login_response.text,
                 login_form_data=login_form_data,
                 http_session=http_session)
 
@@ -185,31 +186,30 @@ class VKSession(object):
         response = http_session.post(url=url, data=auth_check_data)
         return response
 
-    def require_auth_captcha(self, response, query_params,
-                             login_form_data, http_session):
+    def require_auth_captcha(self, query_params, form_text, login_form_data,
+                             http_session):
         """Resolve auth captcha case
 
-        :param response: http response
         :param query_params: dict: response query params, for example:
         {'s': '0', 'email': 'my@email', 'dif': '1', 'role': 'fast', 'sid': '1'}
 
+        :param form_text: str: raw form html data
         :param login_form_data: dict
         :param http_session: requests.Session
         :return: :raise VkAuthError:
         """
         logger.info('Captcha is needed. Query params: %s', query_params)
-        form_text = response.text
 
         action_url = parse_form_action_url(form_text)
         logger.debug('form action url: %s', action_url)
         if not action_url:
             raise VkAuthError('Cannot find form action url')
 
-        captcha_sid, captcha_url = parse_captcha_html(
-            html=response.text, response_url=response.url)
+        captcha_url = '%s?s=%s&sid=%s' % (
+            self.CAPTCHA_URI, query_params['s'], query_params['sid'])
         logger.info('Captcha url %s', captcha_url)
 
-        login_form_data['captcha_sid'] = captcha_sid
+        login_form_data['captcha_sid'] = query_params['sid']
         login_form_data['captcha_key'] = self.get_captcha_key(captcha_url)
 
         response = http_session.post(action_url, login_form_data)
@@ -388,7 +388,7 @@ class VKSession(object):
                            data=method_kwargs,
                            **request.http_params)
         logger.debug('send_api_request:http_params: %s', http_params)
-        response = self.http_session.post(**http_params)
+        response = self.http_session.post(proxies=self.proxies, **http_params)
         return response
 
     def __repr__(self):  # pragma: no cover

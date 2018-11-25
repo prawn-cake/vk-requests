@@ -1,4 +1,4 @@
-VK requests for humans™
+﻿VK requests for humans™
 ========================================================================================================
 [![Build Status](https://travis-ci.org/prawn-cake/vk-requests.svg?branch=master)](https://travis-ci.org/prawn-cake/vk-requests)
 [![Coverage Status](https://coveralls.io/repos/prawn-cake/vk-requests/badge.svg?branch=master&service=github)](https://coveralls.io/github/prawn-cake/vk-requests?branch=master)
@@ -25,8 +25,18 @@ VK requests for humans™
     api = vk_requests.create_api(app_id=123, login='User', password='Password')
     api.users.get(user_ids=1)
     [{'first_name': 'Pavel', 'last_name': 'Durov', 'id': 1}]
+
+
+### How to use proxy
+
+```
+import vk_requests
+
+api = vk_requests.create_api(app_id=6493489, login='89999999999', password='12345', proxies={'http': 'http://log:pass@ipv4:port','https': 'http://log:pass@ipv4:port'})
+print(api.users.get(user_ids=1))
     
+
+
 ### Documentation
 
 Check [full documentation](https://prawn-cake.github.io/vk-requests/)
-    

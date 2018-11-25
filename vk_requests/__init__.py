@@ -1,26 +1,14 @@
 # -*- coding: utf-8 -*-
-import sys
-from vk_requests.session import VKSession
-from vk_requests.api import API
+from .session import VKSession
+from .api import API
 
 
-__version__ = '1.1.2'
-
-
-PY_VERSION = sys.version_info.major, sys.version_info.minor
-
-if PY_VERSION < (3, 4):
-    import warnings
-
-    warnings.simplefilter('default')
-    warnings.warn('Support of all python version less than 3.4 will be stopped '
-                  'in 2.0.0, please migrate your code to python 3.4+',
-                  DeprecationWarning)
+__version__ = '1.1.1'
 
 
 def create_api(app_id=None, login=None, password=None, phone_number=None,
                scope='offline', api_version=None, http_params=None,
-               interactive=False, service_token=None):
+               interactive=False, service_token=None, proxies=None):
     """Factory method to explicitly create API with app_id, login, password
     and phone_number parameters.
 
@@ -47,7 +35,9 @@ def create_api(app_id=None, login=None, password=None, phone_number=None,
                         scope=scope,
                         service_token=service_token,
                         api_version=api_version,
-                        interactive=interactive)
+                        interactive=interactive,
+                        proxies=proxies
+                        )
     return API(session=session, http_params=http_params)
 
 
