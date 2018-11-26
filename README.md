@@ -29,11 +29,10 @@
 
 ### How to use proxy
 
-```
-import vk_requests
+	import vk_requests
 
-api = vk_requests.create_api(app_id=6493489, login='89999999999', password='12345', proxies={'http': 'http://log:pass@ipv4:port','https': 'http://log:pass@ipv4:port'})
-print(api.users.get(user_ids=1))
+	api = vk_requests.create_api(app_id=6493489, login='89999999999', 	password='12345', proxies={'http': 'http://log:pass@ipv4:port','https': 	'http://log:pass@ipv4:port'})
+	print(api.users.get(user_ids=1))
     
 
 
