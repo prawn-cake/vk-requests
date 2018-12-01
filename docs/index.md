@@ -74,6 +74,19 @@ just use `http_params` as follows:
 
     api = vk_requests.create_api(http_params={'timeout': 15, 'verify': False})
 
+##### Using HTTP proxy
+
+To use proxy server just pass it to the `http_params`, e.g
+    
+    proxies = {
+        'http': 'http://10.10.1.10:3128',
+        'https': 'http://10.10.1.10:1080',
+    }
+    
+    api = vk_requests.create_api(http_params={'proxies': proxies})
+    
+For more info, take a look at [requests docs](http://docs.python-requests.org/en/master/user/advanced/#proxies)
+
 
 ### Enable logging
 
