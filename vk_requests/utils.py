@@ -81,7 +81,7 @@ def parse_form_action_url(html, parser=None):
 
     forms = parser.find_all('form')
     if not forms:
-        raise VkParseError('No one form is found in \n%s' % html)
+        raise VkParseError('Action form is not found in the html \n%s' % html)
     if len(forms) > 1:
         raise VkParseError('Find more than 1 forms to handle:\n%s', forms)
     form = forms[0]

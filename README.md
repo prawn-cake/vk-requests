@@ -29,4 +29,6 @@ VK requests for humans™
 ### Documentation
 
 Check [full documentation](https://prawn-cake.github.io/vk-requests/)
+
+Also check the [official VK api methods docs](https://vk.com/dev/methods)
     
