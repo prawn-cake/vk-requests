@@ -17,6 +17,10 @@ class API(object):
         if http_params is None:
             self._http_params = dict(timeout=10)
 
+    @property
+    def version(self):
+        return self._session.api_version
+
     def __getattr__(self, method_name):
         return Request(session=self._session,
                        method_name=method_name,

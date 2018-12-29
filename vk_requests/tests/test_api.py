@@ -30,6 +30,10 @@ class VkApiTest(unittest.TestCase):
         self.assertIsNone(api._session._access_token)
 
     def test_create_api_with_user_token(self):
+        """User token can be gotten via oauth flow, commonly via implicit flow
+        It requires user login and password
+
+        """
         api = vk_requests.create_api(
             app_id=APP_ID, login=USER_LOGIN, password=USER_PASSWORD,
             phone_number=PHONE_NUMBER)
@@ -80,7 +84,6 @@ class VkApiTest(unittest.TestCase):
 class VkApiMethodsLiveTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.vk_api = vk_requests.create_api()
         cls.api_st = vk_requests.create_api(service_token=SERVICE_TOKEN)
         cls.api_ut = cls._create_api()  # user-token api
 
@@ -92,10 +95,6 @@ class VkApiMethodsLiveTest(unittest.TestCase):
             password=USER_PASSWORD,
             **kwargs
         )
-
-    def test_get_server_time(self):
-        server_time = self.api_st.getServerTime()
-        self.assertTrue(int(server_time))
 
     def test_get_profiles_via_token(self):
         profiles = self.api_st.users.get(user_id=1)
@@ -110,9 +109,10 @@ class VkApiMethodsLiveTest(unittest.TestCase):
             count=1000,
             fields=['screen_name'])
 
+        api = vk_requests.create_api()
         # Expect api error because search method requires access token
         with self.assertRaises(VkAPIError) as err:
-            resp = self.vk_api.users.search(**request_opts)
+            resp = api.users.search(**request_opts)
             self.assertIsNone(resp)
             self.assertIn('no access_token passed', str(err))
 
@@ -188,6 +188,11 @@ class VkApiMethodsLiveTest(unittest.TestCase):
 
     def test_wall_get(self):
         resp = self.api_st.wall.get(owner_id=1)
+        self.assertIn('items', resp)
+        self.assertIn('count', resp)
+
+    def test_photos_get(self):
+        resp = self.api_st.photos.get(owner_id="1", album_id='wall')
         self.assertIn('items', resp)
         self.assertIn('count', resp)
 

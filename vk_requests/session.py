@@ -28,7 +28,7 @@ class VKSession(object):
     LOGIN_URL = 'https://m.vk.com'
     AUTHORIZE_URL = 'https://oauth.vk.com/authorize'
     CAPTCHA_URI = 'https://api.vk.com/captcha.php'
-    DEFAULT_API_VERSION = '5.69'
+    DEFAULT_API_VERSION = '5.92'
 
     def __init__(self, app_id=None, user_login=None, user_password=None,
                  phone_number=None, scope='offline', api_version=None,
