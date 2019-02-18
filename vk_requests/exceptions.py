@@ -70,6 +70,6 @@ class VkAPIError(VkException):
         if self.redirect_uri:
             tokens.append('redirect_uri=\'%s\'' % self.redirect_uri)
         return ','.join(tokens)
-    
+
     def __repr__(self):
         return '%s(%s)' % (self.__class__.__name__, self)
