@@ -176,3 +176,42 @@ class VKSessionTest(unittest.TestCase):
         with self.assertRaises(VkParseError) as err:
             vk_session.do_login(http_session=session)
             self.assertIn("Can't parse form action url", str(err))
+
+    def test_direct_auth_require_2fa(self):
+        vk_session = VKSession()
+        session = self.get_mocked_http_session(name='2fa_session')
+
+        response_json = {'error': 'need_validation', 'error_description': 'test 2fa'}
+        post_response = mock.MagicMock()
+        post_response.configure_mock(json=lambda: response_json)
+        session.post = mock.Mock(return_value=post_response)
+
+        with self.patch_api('get_2fa_code') as get_2fa_code:
+            get_2fa_code.return_value = 1234
+            vk_session.do_direct_authorization(session=session)
+            self.assertTrue(get_2fa_code.called)
+            call_2fa = dict(tuple(session.post.call_args_list[-1])[1])
+
+            self.assertEqual(call_2fa['url'], 'https://oauth.vk.com/token')
+            self.assertEqual(call_2fa['data']['code'], 1234)
+
+    def test_direct_auth_require_captcha(self):
+        vk_session = VKSession()
+        session = self.get_mocked_http_session()
+
+        response_json = {'error': 'need_captcha',
+                         'captcha_sid': '854844498568',
+                         'captcha_img': 'http:\/\/api.vk.com\/captcha.php?sid=854844498568&s=1'}
+        post_response = mock.MagicMock()
+        post_response.configure_mock(json=lambda: response_json)
+        session.post = mock.Mock(return_value=post_response)
+
+        with self.patch_api('get_captcha_key') as get_captcha_key:
+            get_captcha_key.return_value = 'hzzk'
+            vk_session.do_direct_authorization(session=session)
+            self.assertTrue(get_captcha_key.called)
+            call_require_captcha = dict(tuple(session.post.call_args_list[-1])[1])
+
+            self.assertEqual(call_require_captcha['url'], 'https://oauth.vk.com/token')
+            self.assertEqual(call_require_captcha['data']['captcha_sid'], '854844498568')
+            self.assertEqual(call_require_captcha['data']['captcha_key'], 'hzzk')
