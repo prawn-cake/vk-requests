@@ -50,7 +50,7 @@ class VKSession(object):
         self._api_version = api_version
         self._client_secret = client_secret
         self._two_fa_supported = two_fa_supported
-        self.two_fa_force_sms = two_fa_force_sms
+        self._two_fa_force_sms = two_fa_force_sms
 
         # requests.Session subclass instance
         self._http_session = None
