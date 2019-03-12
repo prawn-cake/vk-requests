@@ -57,7 +57,7 @@ For example when you got a token on the client side ([implicit flow](https://vk.
 
 Use `service_token` parameter as in the example above. 
 
-### User token with client_secrete (Direct Authorization)
+### User token with client_secret (Direct Authorization)
 
 Trusted applications can get unlimited `access_token` to access API by passing with application ID, username, password and `client_secret` - secret key of your application.
 
