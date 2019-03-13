@@ -20,7 +20,8 @@ if PY_VERSION < (3, 4):
 
 def create_api(app_id=None, login=None, password=None, phone_number=None,
                scope='offline', api_version=None, http_params=None,
-               interactive=False, service_token=None):
+               interactive=False, service_token=None, client_secret=None,
+               two_fa_supported=False, two_fa_force_sms=False):
     """Factory method to explicitly create API with app_id, login, password
     and phone_number parameters.
 
@@ -37,6 +38,12 @@ def create_api(app_id=None, login=None, password=None, phone_number=None,
     :param service_token: str: new way of querying vk api, instead of getting
     oauth token
     :param http_params: dict: requests http parameters passed along
+    :param client_secret: str: secure application key for Direct Authorization,
+    more info: https://vk.com/dev/auth_direct
+    :param two_fa_supported: bool: enable two-factor authentication for Direct Authorization,
+    more info: https://vk.com/dev/auth_direct
+    :param two_fa_force_sms: bool: force SMS two-factor authentication for Direct Authorization
+    if two_fa_supported is True, more info: https://vk.com/dev/auth_direct
     :return: api instance
     :rtype : vk_requests.api.API
     """
@@ -47,7 +54,10 @@ def create_api(app_id=None, login=None, password=None, phone_number=None,
                         scope=scope,
                         service_token=service_token,
                         api_version=api_version,
-                        interactive=interactive)
+                        interactive=interactive,
+                        client_secret=client_secret,
+                        two_fa_supported = two_fa_supported,
+                        two_fa_force_sms=two_fa_force_sms)
     return API(session=session, http_params=http_params)
 
 

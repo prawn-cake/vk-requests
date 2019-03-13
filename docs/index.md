@@ -57,7 +57,19 @@ For example when you got a token on the client side ([implicit flow](https://vk.
 
 Use `service_token` parameter as in the example above. 
 
-   
+### User token with client_secret (Direct Authorization)
+
+Trusted applications can get unlimited `access_token` to access API by passing with application ID, username, password and `client_secret` - secret key of your application.
+
+
+    api = vk_requests.create_api(app_id=123, login='User', password='Password',
+                                 client_secret="{YOUR_APP_CLIENT_SECRET}")
+    ...
+    
+
+[More info](https://vk.com/dev/auth_direct) about Direct Authorization.
+
+
 ### Using custom parameters
 
 #### Scope or api version

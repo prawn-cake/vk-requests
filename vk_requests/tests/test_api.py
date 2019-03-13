@@ -8,7 +8,7 @@ from vk_requests.api import API
 from vk_requests.exceptions import VkAPIError
 from vk_requests import VKSession
 from vk_requests.settings import APP_ID, USER_LOGIN, USER_PASSWORD, \
-    PHONE_NUMBER, SERVICE_TOKEN
+    PHONE_NUMBER, SERVICE_TOKEN, CLIENT_SECRET
 
 try:
     from unittest import mock
@@ -79,6 +79,20 @@ class VkApiTest(unittest.TestCase):
         api.users.get(user_id=1, v=version)
         url_data, params = tuple(mock_request.call_args_list[0])
         self.assertEqual(params['data']['v'], version)
+
+    @unittest.skip('Custom method test')
+    def test_create_api_with_client_secret(self):
+        """Test direct authorization, it requires approved app id,
+        user login, password, and secret code, more about it: https://vk.com/dev/auth_direct
+
+        """
+        api = vk_requests.create_api(app_id=APP_ID, login=USER_LOGIN,
+                                     password=USER_PASSWORD, client_secret=CLIENT_SECRET)
+        self.assertIsInstance(api, API)
+
+        # Check that we have got access token on init
+        self.assertIsInstance(
+            api._session._access_token, six.string_types)
 
 
 class VkApiMethodsLiveTest(unittest.TestCase):
