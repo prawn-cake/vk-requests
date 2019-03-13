@@ -13,7 +13,7 @@ def api():
     return StreamingAPI(service_token=SERVICE_TOKEN)
 
 
-@pytest.mark.skipIf(sys.version_info < (3, 4), reason="py34+")
+@pytest.mark.skipIf(sys.version_info < (3, 4) or not SERVICE_TOKEN, reason="py34+")
 def test_streaming_api_basics(api):
     api.remove_rule(tag='test_hello')
     resp = api.add_rule(value='Hello', tag='test_hello')

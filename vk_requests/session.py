@@ -144,6 +144,7 @@ class VKSession(object):
             'display': 'mobile',
             'response_type': 'token',
             'scope': self.scope,
+            'redirect_uri': 'https://oauth.vk.com/blank.html',
             'v': self.api_version
         }
         response = session.post(url=self.AUTHORIZE_URL,
