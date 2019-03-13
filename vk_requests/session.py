@@ -184,7 +184,7 @@ class VKSession(object):
             'username': self._login,
             'password': self._password,
             'grant_type': 'password',
-            '2fa_supported': self.two_fa_supported,
+            '2fa_supported': self._two_fa_supported,
             'scope': self.scope,
             'v': self.api_version
         }
@@ -210,8 +210,8 @@ class VKSession(object):
                 raise VkAuthError(error_message)
 
     def direct_auth_require_2fa(self, session, auth_data):
-        if self.two_fa_force_sms:
-            auth_data['force_sms'] = self.two_fa_force_sms
+        if self._two_fa_force_sms:
+            auth_data['force_sms'] = self._two_fa_force_sms
             session.post(url=self.DIRECT_AUTHORIZE_URL,
                          data=stringify_values(auth_data))
         logger.info(
