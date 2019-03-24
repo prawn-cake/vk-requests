@@ -63,7 +63,7 @@ class VkApiTest(unittest.TestCase):
         api = vk_requests.create_api()
         api.users.get(user_id=1)
         url_data, params = tuple(mock_request.call_args_list[0])
-        self.assertEqual(params['data']['v'], VKSession.DEFAULT_API_VERSION)
+        self.assertEqual(params['data']['v'], api.version)
         mock_request.reset_mock()
 
         # Expect predefined version
@@ -181,11 +181,11 @@ class VkApiMethodsLiveTest(unittest.TestCase):
         self.assertEqual(resp, {'text': status_text})
 
     def test_multi_scope_requests(self):
-        api = self._create_api(scope=['messages', 'status'])
+        api = self._create_api(scope=['photos', 'status'])
         resp = api.status.get()
         self.assertIn('text', resp)
 
-        resp = api.messages.search(q='test')
+        resp = api.photos.getAlbums()
         self.assertIsInstance(resp, dict)
         total_msg, msg_list = resp['count'], resp['items']
         self.assertIsInstance(total_msg, int)

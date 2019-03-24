@@ -10,3 +10,5 @@ vk_requests.egg-info/
 __pycache__
 dist
 site/
+build
+get_test_app.txt

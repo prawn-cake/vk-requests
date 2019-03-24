@@ -19,7 +19,7 @@ if PY_VERSION < (3, 4):
 
 
 def create_api(app_id=None, login=None, password=None, phone_number=None,
-               scope='offline', api_version=None, http_params=None,
+               scope='offline', api_version='5.92', http_params=None,
                interactive=False, service_token=None, client_secret=None,
                two_fa_supported=False, two_fa_force_sms=False):
     """Factory method to explicitly create API with app_id, login, password

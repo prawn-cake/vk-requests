@@ -29,7 +29,6 @@ class VKSession(object):
     AUTHORIZE_URL = 'https://oauth.vk.com/authorize'
     DIRECT_AUTHORIZE_URL = 'https://oauth.vk.com/token'
     CAPTCHA_URI = 'https://api.vk.com/captcha.php'
-    DEFAULT_API_VERSION = '5.92'
 
     def __init__(self, app_id=None, user_login=None, user_password=None,
                  phone_number=None, scope='offline', api_version=None,
@@ -74,7 +73,7 @@ class VKSession(object):
 
     @property
     def api_version(self):
-        return self._api_version or self.DEFAULT_API_VERSION
+        return self._api_version
 
     def is_token_required(self):
         """Helper method for vk_requests.auth.VKSession initialization
@@ -150,6 +149,7 @@ class VKSession(object):
         response = session.post(url=self.AUTHORIZE_URL,
                                 data=stringify_values(auth_data))
         url_query_params = parse_url_query_params(response.url)
+
         if 'expires_in' in url_query_params:
             logger.info('Token will be expired in %s sec.' %
                         url_query_params['expires_in'])
