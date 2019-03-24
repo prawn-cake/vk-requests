@@ -3,7 +3,7 @@ Changelog
 
 1.2.0 (2019-03-24)
 --------------------
-* [Feature] [#34](https://github.com/prawn-cake/vk-requests/issues/34): Direct authorization
+* [Feature] [#37](https://github.com/prawn-cake/vk-requests/issues/37): Direct authorization
 
 1.1.2 (2018-07-21)
 --------------------
