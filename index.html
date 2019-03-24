@@ -245,6 +245,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#user-token-with-client_secret-direct-authorization" title="User token with client_secret (Direct Authorization)" class="md-nav__link">
+    User token with client_secret (Direct Authorization)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#using-custom-parameters" title="Using custom parameters" class="md-nav__link">
     Using custom parameters
   </a>
@@ -263,6 +270,19 @@
   <a href="#http-parameters" title="HTTP parameters" class="md-nav__link">
     HTTP parameters
   </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-http-proxy" title="Using HTTP proxy" class="md-nav__link">
+    Using HTTP proxy
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -466,6 +486,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#user-token-with-client_secret-direct-authorization" title="User token with client_secret (Direct Authorization)" class="md-nav__link">
+    User token with client_secret (Direct Authorization)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#using-custom-parameters" title="Using custom parameters" class="md-nav__link">
     Using custom parameters
   </a>
@@ -484,6 +511,19 @@
   <a href="#http-parameters" title="HTTP parameters" class="md-nav__link">
     HTTP parameters
   </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-http-proxy" title="Using HTTP proxy" class="md-nav__link">
+    Using HTTP proxy
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -650,6 +690,13 @@ credentials and oauth requests, but <strong>not all the methods can be called wi
 <h3 id="using-client-access-token">Using client access token</h3>
 <p>For example when you got a token on the client side (<a href="https://vk.com/dev/implicit_flow_user">implicit flow</a>) and want to query API on the backend.</p>
 <p>Use <code>service_token</code> parameter as in the example above. </p>
+<h3 id="user-token-with-client_secret-direct-authorization">User token with client_secret (Direct Authorization)</h3>
+<p>Trusted applications can get unlimited <code>access_token</code> to access API by passing with application ID, username, password and <code>client_secret</code> - secret key of your application.</p>
+<pre><code>api = vk_requests.create_api(app_id=123, login='User', password='Password',
+                             client_secret="{YOUR_APP_CLIENT_SECRET}")
+...
+</code></pre>
+<p><a href="https://vk.com/dev/auth_direct">More info</a> about Direct Authorization.</p>
 <h3 id="using-custom-parameters">Using custom parameters</h3>
 <h4 id="scope-or-api-version">Scope or api version</h4>
 <p>Just pass <code>scope</code> and/or <code>api_version</code> parameters like</p>
@@ -661,6 +708,16 @@ api.status.set(text='Hello world!')
 just use <code>http_params</code> as follows:</p>
 <pre><code>api = vk_requests.create_api(http_params={'timeout': 15, 'verify': False})
 </code></pre>
+<h5 id="using-http-proxy">Using HTTP proxy</h5>
+<p>To use proxy server just pass it to the <code>http_params</code>, e.g</p>
+<pre><code>proxies = {
+    'http': 'http://10.10.1.10:3128',
+    'https': 'http://10.10.1.10:1080',
+}
+
+api = vk_requests.create_api(http_params={'proxies': proxies})
+</code></pre>
+<p>For more info, take a look at <a href="http://docs.python-requests.org/en/master/user/advanced/#proxies">requests docs</a></p>
 <h3 id="enable-logging">Enable logging</h3>
 <p>To enable library logging in your project you should do as follows:</p>
 <pre><code>import logging
