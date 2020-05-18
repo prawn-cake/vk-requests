@@ -6,6 +6,7 @@ import sys
 PY_VERSION = sys.version_info.major, sys.version_info.minor
 
 install_requires = [
+    'python-rucaptcha',
     'six',
     'requests>=2.8.1',
     'beautifulsoup4>=4.4.1']
