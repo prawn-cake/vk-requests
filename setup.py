@@ -6,7 +6,7 @@ import sys
 PY_VERSION = sys.version_info.major, sys.version_info.minor
 
 install_requires = [
-    'six',
+    'six>=1.13.0',
     'requests>=2.8.1',
     'beautifulsoup4>=4.4.1']
 
