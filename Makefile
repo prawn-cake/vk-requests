@@ -2,7 +2,7 @@
 VIRTUAL_ENV=$(CURDIR)/.env
 PYTHON=$(VIRTUAL_ENV)/bin/python
 COVERAGE=$(VIRTUAL_ENV)/bin/coverage
-NOSE=$(VIRTUAL_ENV)/bin/nosetests
+TEST_RUNNER=$(VIRTUAL_ENV)/bin/pytest
 
 
 help:
@@ -33,7 +33,7 @@ env:
 .PHONY: test
 test: env
 # target: test - Run tests
-	@$(NOSE) --with-coverage .
+	@$(TEST_RUNNER) --cov .
 
 
 # ===============
