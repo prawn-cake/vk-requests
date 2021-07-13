@@ -17,7 +17,7 @@ with open('README.md') as f:
 
 setup(
     name='vk-requests',
-    version='1.2.0',
+    version='1.2.1',
     packages=['vk_requests'],
     url='https://github.com/prawn-cake/vk-requests',
     license='MIT',

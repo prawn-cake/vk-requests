@@ -4,7 +4,7 @@ from vk_requests.session import VKSession
 from vk_requests.api import API
 
 
-__version__ = '1.2.0'
+__version__ = '1.2.1'
 
 
 PY_VERSION = sys.version_info.major, sys.version_info.minor
