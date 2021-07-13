@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-from collections import Iterable
-
 import bs4
 import requests
 import six
@@ -37,7 +35,7 @@ def stringify_values(data):
         items = []
         if isinstance(value, six.string_types):
             items.append(value)
-        elif isinstance(value, Iterable):
+        elif isinstance(value, six.moves.collections_abc.Iterable):
             for v in value:
                 # Convert to str int values
                 if isinstance(v, int):
