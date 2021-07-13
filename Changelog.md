@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.2.1 (2021-07-13)
+--------------------
+* [Improvement] [#41](https://github.com/prawn-cake/vk-requests/issues/41): DeprecationWarning: Using or importing the ABCs from 'collections'
+
+
 1.2.0 (2019-03-24)
 --------------------
 * [Feature] [#37](https://github.com/prawn-cake/vk-requests/issues/37): Direct authorization
